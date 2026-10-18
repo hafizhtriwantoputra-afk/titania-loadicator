@@ -2,11 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Sebelum mengubah kode, baca graphify-out/GRAPH_REPORT.md dulu untuk memahami struktur proyek. Folder itu hanya ada di komputer ini; kalau tidak ada atau usang, jalankan /graphify dulu.
-
 ## What this is
 
 Titania Loadicator: an offline-capable PWA loading-condition calculator for MT TITANIA (IMO 9987469). It computes drafts/trim (CAMEL method), GM, IS Code 2008 intact stability and weather criterion, SF/BM, propeller immersion, bridge visibility, trim-corrected cargo soundings, and a PDF report. It is a planning aid only; the approved CAMEL loading computer is the official reference.
+
+## Sebelum mengubah kode
+- Baca graphify-out/GRAPH_REPORT.md dulu untuk memahami struktur proyek. Folder itu hanya ada di komputer ini dan tidak ikut git; kalau tidak ada atau usang, jalankan /graphify dulu.
+- Setelah perubahan yang menambah atau mengubah fungsi, fitur, atau file, dan hasilnya sudah dicek serta di-commit, jalankan /graphify . --update atau ingatkan user.
 
 ## Build / test / run
 
