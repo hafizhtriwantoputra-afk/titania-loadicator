@@ -11,7 +11,7 @@ Loading condition calculator for **MT TITANIA** (IMO 9987469): drafts and trim (
 4. Add to Home Screen (Chrome: menu → *Add to Home screen*; Safari: Share → *Add to Home Screen*). It then works offline.
 
 ## Updating
-Replace `index.html` and change the cache name in `sw.js` (e.g. `titania-lc-v2-6`) so phones fetch the new version.
+Replace `index.html` and change the cache name in `sw.js` (e.g. `titania-lc-v3-1`) so phones fetch the new version.
 
 ## Data sources
 CAMEL Stored Data Rev.A (BV), Test Loading Conditions Rev.A (BV), Loading Manual OM-GFW52118-050-002JS, Bonjean's Table OM-GFW52118-100-005, SGS cargo tank calibration tables COWONB2401371-02 Rev.0.
