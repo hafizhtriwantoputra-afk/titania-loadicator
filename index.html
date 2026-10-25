@@ -206,6 +206,8 @@ nav.tabs .wrap{display:grid;grid-template-columns:repeat(6,1fr)}
 .pl-body{padding:0 14px 14px}
 .pl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px 10px}
 .pl-grid .field input{width:100%;box-sizing:border-box}
+.pl-grid .field input,.pl-grid .field select{min-width:0;max-width:100%}
+.pl-grid .field input[type=date]{-webkit-appearance:none;appearance:none;display:block;text-align:left;min-height:42px;margin:0}   /* iPhone Safari gave the date box its own wide minimum size and it overlapped the next box */
 .pl-parcel{border:1px dashed var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px}
 .pl-pcout{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-top:6px}
 .pl-pcout b{color:var(--ink);font-weight:500}
