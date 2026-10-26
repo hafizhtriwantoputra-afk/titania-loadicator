@@ -482,6 +482,13 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
   <div class="row" style="margin-bottom:6px"><button class="btn pri" id="xpExport" type="button">Export Excel + PDF</button></div>
   <p class="note" id="xpMsg"></p>
   <div class="row" id="xpFiles" style="flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+  <h2>ISGOTT Checklist</h2>
+  <p class="sub">Ship/Shore Safety Checklist (D-01) as a PDF, 2-in-1. Only the date, port and berth, terminal and the Declaration name, rank and date are filled in. The template pages are stored only on this phone.</p>
+  <p class="note" id="isgTpl"></p>
+  <div class="row" style="margin-bottom:8px"><button class="btn sm" id="isgTplBtn" type="button">Choose ISGOTT template</button><input type="file" id="isgTplFile" accept=".json,application/json" hidden></div>
+  <div class="row" style="margin-bottom:6px"><button class="btn pri" id="isgExport" type="button">Create ISGOTT PDF</button></div>
+  <p class="note" id="isgMsg"></p>
+  <div class="row" id="isgFiles" style="flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
   <h2>Export / Import</h2>
   <div class="row" style="margin-bottom:8px"><button class="btn sm" id="btnCopy" type="button">Copy condition JSON</button><label class="btn sm" for="fileIn">Open .json file</label><input type="file" id="fileIn" accept=".json,application/json" hidden></div>
   <textarea id="jsonBox" placeholder="Paste condition JSON here, then tap Import" aria-label="Condition JSON"></textarea>
@@ -2417,6 +2424,56 @@ async function buildSheetPdf(tpl, res, names, nup, sigs){
   return P.blob();
 }
 let XP_FILES = [];
+// --- ISGOTT checklist: page images made from the user's Word file, only the filled values are printed on top ---
+const ISG = { pages:null, name:'' }, ISG_MON = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+async function isgLoad(){ try{ const v = await idb('readonly', os=>os.get('isgott')); if(v&&v.pages){ ISG.pages = v.pages; ISG.name = v.name||''; } }catch(e){} isgShow(); }
+async function isgSave(pages,name){ ISG.pages = pages; ISG.name = name; try{ await idb('readwrite', os=>os.put({pages,name},'isgott')); }catch(e){} isgShow(); }
+function isgShow(){ const e=$('#isgTpl'); if(e) e.textContent = ISG.pages ? 'ISGOTT template: '+ISG.name+' ('+ISG.pages.length+' pages)' : 'ISGOTT template: not chosen'; }
+const isgDate = (iso, mon) => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||''); if(!m) return null; const d=+m[3], suf=(d%100>=11&&d%100<=13)?'th':({1:'st',2:'nd',3:'rd'})[d%10]||'th'; return { d:String(d), suf, rest:' '+mon[+m[2]-1]+' '+m[1] }; };
+// x and y (baseline, from the top of the page) were measured on the template pages: page 1 header, page 6 Declaration
+function isgFill(P, pg, d){
+  const B = (x,y,t,sz,maxW) => P.text(x,y,t,{size:sz,bold:true,maxW});
+  const dt = (x,y,sz,mon,up) => { const q=isgDate(d.date,mon); if(!q) return; const sf=up?q.suf.toUpperCase():q.suf, ss=sz*0.62, W=(t,z)=>MiniPDF.width(t,z,true,'H',false);
+    B(x,y,q.d,sz); let w=W(q.d,sz); P.text(x+w,y-sz*0.36,sf,{size:ss,bold:true}); w+=W(sf,ss); B(x+w,y,q.rest,sz); };
+  const up = t => String(t||'').trim().toUpperCase();
+  if(pg===0){
+    dt(196.8,108,10,ISG_MON,true);
+    const pb = [d.port,d.terminal].map(up).filter(Boolean).join(' / '); if(pb) B(196.8,136.8,pb,10,360);
+    if(d.terminal) B(196.8,194.5,up(d.terminal),10,360);
+  }
+  if(pg===5){
+    const o=d.w&&d.w.o1;
+    if(o&&o.name) B(52,696,up(o.name),9,340); if(o&&o.rank) B(48.8,724.5-0,up(rankSig(o.rank)),9,340);
+    dt(47.5,781.5,9,['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],false);
+    dt(331.2,781.5,9,['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],false);
+  }
+}
+async function buildIsgPdf(d){
+  const P = new MiniPDF.Doc(); P.pages.length = 0; P.flipBack = true;
+  const PW = 595.25, PH = 842, k = Math.min(421/PW, 595/PH); let open = false;
+  for(let i=0;i<ISG.pages.length;i++){
+    if(open) P.endSlot(); P.slotPage(PW, PH, 842, 595, i%2, k); open = true;
+    P.image(0, 0, PW, PH, P.addImage(await MiniPDF.loadImage(new Uint8Array(ISG.pages[i]), 'image/jpeg')));
+    isgFill(P, i, d);
+  }
+  if(open) P.endSlot();
+  return P.blob();
+}
+let ISG_OUT = null;
+async function isgExport(){
+  const msg=$('#isgMsg'); if(!ISG.pages){ msg.textContent='Choose the ISGOTT template first.'; return; }
+  msg.textContent='Creating PDF...';
+  try{
+    const d = planData(), blob = await buildIsgPdf(d), name = ['ISGOTT Checklist', d.port, d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'')+'.pdf';
+    ISG_OUT = [blob, name]; window.__isgPdf = blob;
+    $('#isgFiles').innerHTML = '<button class="btn sm pri" type="button" data-isgdl="1">Save ISGOTT PDF</button>';
+    msg.textContent = 'ISGOTT PDF ready ('+Math.round(blob.size/1024)+' KB). Tap Save.';
+  }catch(e){ console.error(e); msg.textContent = 'Failed: '+(e&&e.message||e); }
+}
+$('#isgTplBtn').onclick = ()=>$('#isgTplFile').click();
+$('#isgTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.text().then(t=>{ try{ const j=JSON.parse(t); if(j.kind!=='isgott'||!Array.isArray(j.pages)||!j.pages.length) throw 0; isgSave(j.pages.map(b=>dataBytes('x,'+b).buffer), j.name||fl.name); }catch(err){ $('#isgMsg').textContent='Not a valid ISGOTT template file.'; } }); e.target.value=''; };
+$('#isgExport').onclick = isgExport;
+$('#isgFiles').addEventListener('click', e => { if(e.target.closest('[data-isgdl]') && ISG_OUT) saveBlob(ISG_OUT[0], ISG_OUT[1]); });
 async function exportPlan(){
   const msg=$('#xpMsg'); msg.textContent='Creating files...';
   try{
@@ -2442,7 +2499,7 @@ $('#xpExport').onclick = exportPlan;
 $('#xpFiles').addEventListener('click', async e => { const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.xdl != null){ const f = XP_FILES[+b.dataset.xdl]; if(f) saveBlob(f[0], f[1]); return; }
   if(b.dataset.xshare){ try{ await navigator.share({ files: XP_FILES.map(f => new File([f[0]], f[1], { type: f[0].type })), title: 'Loading Plan' }); }catch(err){ if(err && err.name !== 'AbortError') $('#xpMsg').textContent = 'Could not share: '+err.message; } } });
-tplLoad();
+tplLoad(); isgLoad();
 
 loadState(S); renderSaved(); renderInfo();
 </script>
