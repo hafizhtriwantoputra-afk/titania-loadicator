@@ -493,20 +493,27 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
 </section>
 
 <section class="tab" id="t-set">
-  <h2>Settings</h2>
-  <div class="card">
+  <details class="group" open data-sg="general"><summary><span class="g-title">General</span><span class="chev">›</span></summary><div class="pl-body">
+  
+  <div>
     <div class="row" style="justify-content:space-between"><label for="rhoSW">Sea water density (t/m³)</label><input class="n" id="rhoSW" inputmode="decimal" value="1.025"></div>
     <div class="row" style="justify-content:space-between;margin-top:10px"><label for="zone">Load line zone</label><select id="zone"></select></div>
     <div class="row" style="justify-content:space-between;margin-top:10px"><label for="inAir">Cargo weight in air (WCF = ρ − 0.0011)</label><input type="checkbox" id="inAir"></div>
     <p class="note" style="margin-top:8px">CAMEL uses weight = GSV × density (no −0.0011). Leave this off to match CAMEL.</p>
   </div>
-  <h2>Draft display</h2>
-  <div class="card">
+  
+  </div></details>
+  <details class="group" open data-sg="draft"><summary><span class="g-title">Draft display</span><span class="chev">›</span></summary><div class="pl-body">
+  
+  <div>
     <div class="seg" id="draftRef"><button type="button" data-v="pp">At perpendiculars (AP / FP)</button><button type="button" data-v="mark">At draft marks</button></div>
     <p class="note" style="margin-top:8px">Both are extreme drafts (from the underside of the keel). Perpendiculars: AP −48.90 m, FP +48.90 m from midship, as CAMEL's main figures. Draft marks: aft −37.50 m, mid +1.27 m, fwd +45.15 m, the figures you read on the hull.</p>
   </div>
-  <h2>Trim for sounding correction</h2>
-  <div class="card">
+  
+  </div></details>
+  <details class="group" open data-sg="trim"><summary><span class="g-title">Trim for sounding correction</span><span class="chev">›</span></summary><div class="pl-body">
+  
+  <div>
     <div class="seg" id="trimMode"><button type="button" data-v="calc">Calculated</button><button type="button" data-v="obs">Observed drafts</button><button type="button" data-v="off">No correction</button></div>
     <div class="row" style="justify-content:space-between;margin-top:10px"><span class="lbl">Rounding</span><div class="seg" id="tcRound"><button type="button" data-v="mm">Interpolated (1 mm)</button><button type="button" data-v="cm">Whole cm</button></div></div>
     <div class="trimsrc" id="obsBox" hidden>
@@ -515,18 +522,27 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
     </div>
     <p class="note" style="margin-top:8px">COT 1–5 use the trim correction tables from the calibration certificate (COWONB2401371-02 Rev.0), trim −1.0 to +4.0 m (book in mm), interpolated on trim and sounding. <strong>Interpolated</strong> rounds the correction to the nearest 1 mm (e.g. −17.36 → −17 mm). <strong>Whole cm</strong> rounds it to whole centimetres as in the ship's ullage report (−17.36 mm → −2 cm). <strong>Calculated</strong> repeats the calculation until the trim used for the correction equals the resulting trim. Slop and residual tanks have no trim table and are not corrected.</p>
   </div>
-  <h2>Ullage reference height</h2>
+  
+  </div></details>
+  <details class="group" open data-sg="ullage"><summary><span class="g-title">Ullage reference height</span><span class="chev">›</span></summary><div class="pl-body">
+  
   <p class="sub">Ullage = reference height − sounding. Default is the top of the calibration table. Set it to the value in the calibration book.</p>
-  <div class="card tbl-wrap"><table><thead><tr><th>Tank</th><th id="ullH">Ref height</th></tr></thead><tbody id="ullBody"></tbody></table></div>
-  <h2>About the calculation</h2>
-  <div class="card note">
+  <div class="tbl-wrap"><table><thead><tr><th>Tank</th><th id="ullH">Ref height</th></tr></thead><tbody id="ullBody"></tbody></table></div>
+  
+  </div></details>
+  <details class="group" open data-sg="about"><summary><span class="g-title">About the calculation</span><span class="chev">›</span></summary><div class="pl-body">
+  
+  <div class="note">
     <p><strong>Version 2, planning aid.</strong> Official documents remain the approved CAMEL output.</p>
     <p><strong>Data sources:</strong> CAMEL Stored Data Rev.A (BV): hydrostatics and cross curves per trim, tank tables, lightweight distribution, frame spacing, strength limits, wind and flooding data. Bonjean's Table (100-005). SGS cargo tank calibration tables and trim corrections (COWONB2401371-02). Loading Manual §2.2–2.3 for the IS Code 2008 criteria.</p>
     <p><strong>Method:</strong> free-trim equilibrium (LCB = LCG) from the trim tables, as CAMEL does. GZ from KN with free surface: constant FSM for consumables and ballast, real liquid shift for slack cargo tanks, nominally full (≥98%) cargo tanks per Loading Manual §2.3.2.</p>
     <p><strong>Check against the 4 CAMEL test conditions:</strong> drafts, trim, KMT and GM fluid equal to CAMEL within 0.002 m. IS Code areas and GZ within 0.01 (slack cargo slightly on the safe side). SF/BM use a correction calibrated on these conditions; a cross-check on conditions not used for calibration gave SF within 6 t and BM within 1% of the allowable.</p>
     <p><strong>Propeller immersion</strong> from Stored Data p.5 (tip 3.55 m above keel at −46.5 m) and Loading Manual (Zs 2.20 m, Dp 2.70 m). <strong>Visibility</strong> per SOLAS V/22 from Stored Data p.15 (eye 21.0 m at −31.05 m, bow chock 14.1 m at 52.317 m). Both match the CAMEL test conditions.</p><p>Not included: damage stability.</p>
   </div>
+  </div></details>
+  <details class="group" open data-sg="theme"><summary><span class="g-title">Theme</span><span class="chev">›</span></summary><div class="pl-body">
   <div class="row"><span class="lbl">Theme</span><div class="seg" id="themeSeg"><button type="button" data-v="">System</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button></div></div>
+  </div></details>
 </section>
 
 </div></main>
@@ -2518,6 +2534,7 @@ $('#xpTplBtn').onclick = ()=>$('#xpTplFile').click();
 $('#xpTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.arrayBuffer().then(b=>{ try{ PlanXlsx.readZip(new Uint8Array(b)); tplSave(new Uint8Array(b), fl.name); }catch(err){ $('#xpMsg').textContent='Not a valid .xlsx file.'; } }); e.target.value=''; };
 tplLoad(); isgLoad();
 
+document.querySelectorAll('#t-set details[data-sg]').forEach(d=>{ if((store.get('lc_open')||{})['set_'+d.dataset.sg]===false) d.open=false; d.querySelector('summary').addEventListener('click',()=>setTimeout(()=>{ const o=store.get('lc_open')||{}; o['set_'+d.dataset.sg]=d.open; store.set('lc_open',o); })); });
 loadState(S); renderSaved(); renderInfo();
 </script>
 
