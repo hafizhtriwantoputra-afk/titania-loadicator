@@ -280,6 +280,7 @@ body.plan-mode header.readout:not(#plRO),body.plan-mode .profile{display:none}
 .modal{position:fixed;inset:0;z-index:30;background:rgb(5 14 20/.55);display:flex;align-items:flex-end;justify-content:center;padding:16px}
 .modal .box{background:var(--panel);color:var(--ink);border-radius:14px;padding:16px;max-width:520px;width:100%;max-height:calc(100% - 32px);overflow:auto;border:1px solid var(--line)}
 @media (min-width:600px){.modal{align-items:center}}
+.tp-list{display:grid;gap:8px;margin:8px 0 12px}.tp-it{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px}.tp-it small{font-size:12px;opacity:.7;font-weight:400}
 .modal h3{margin:0 0 4px;font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:.04em;text-transform:uppercase}
 .opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin:8px 0 12px}
 .opt-grid .field input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:7px;background:var(--input)}
@@ -475,13 +476,8 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
   <p class="sub">Stored in this phone's browser. Use Export to back up or move to another phone.</p>
   <div class="row" style="margin-bottom:12px"><button class="btn pri" id="btnSave" type="button">Save current condition</button></div>
   <div class="list" id="savedList"></div>
-  <h2>Export Loading Plan</h2>
-  <p class="sub">Choose the files to create: Loading Plan PDF (2-in-1), Loading Plan Excel, Hourly Record and the Ship/Shore Safety Checklist. The templates are stored only on this phone.</p>
-  <p class="note" id="xpTpl"></p>
-  <div class="row" style="margin-bottom:8px"><button class="btn sm" id="xpTplBtn" type="button">Choose Excel template</button><input type="file" id="xpTplFile" accept=".xlsx" hidden></div>
-  <p class="note" id="isgTpl"></p>
-  <div class="row" style="margin-bottom:8px"><button class="btn sm" id="isgTplBtn" type="button">Choose ISGOTT template</button><input type="file" id="isgTplFile" accept=".json,application/json" hidden></div>
-  <div class="row" style="margin-bottom:6px"><button class="btn pri" id="xpExport" type="button">Export</button></div>
+  <div class="row" style="margin-bottom:6px"><button class="btn sm" id="tpBtn" type="button">Template</button><button class="btn pri" id="xpExport" type="button">Export</button></div>
+  <input type="file" id="xpTplFile" accept=".xlsx" hidden><input type="file" id="isgTplFile" accept=".json,application/json" hidden>
   <p class="note" id="xpMsg"></p>
   <div class="row" id="xpFiles" style="flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
   <h2>Export / Import</h2>
@@ -545,6 +541,15 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
   <button data-tab="t-set" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Settings</button>
 </div></nav>
 
+<div class="modal" id="tpModal" hidden><div class="box" role="dialog" aria-labelledby="tpTitle">
+  <h3 id="tpTitle">Template</h3>
+  <p class="sub" style="margin:0 0 6px">Choose which template to load. Templates stay on this phone only.</p>
+  <div class="tp-list">
+    <button class="btn tp-it" id="xpTplBtn" type="button"><b>Loading Plan (Excel)</b><small id="xpTpl"></small></button>
+    <button class="btn tp-it" id="isgTplBtn" type="button"><b>Ship Shore C/L</b><small id="isgTpl"></small></button>
+  </div>
+  <div class="row" style="justify-content:flex-end"><button class="btn" id="tpClose" type="button">Close</button></div>
+</div></div>
 <div class="modal" id="xpModal" hidden><div class="box" role="dialog" aria-labelledby="xpTitle">
   <h3 id="xpTitle">Export Loading Plan</h3>
   <p class="sub" style="margin:0 0 6px">Choose the files to create.</p>
@@ -2469,7 +2474,7 @@ async function buildIsgPdf(d){
   return P.blob();
 }
 $('#isgTplBtn').onclick = ()=>$('#isgTplFile').click();
-$('#isgTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.text().then(t=>{ try{ const j=JSON.parse(t); if(j.kind!=='isgott'||!Array.isArray(j.pages)||!j.pages.length) throw 0; isgSave(j.pages.map(b=>dataBytes('x,'+b).buffer), j.name||fl.name); }catch(err){ $('#isgMsg').textContent='Not a valid ISGOTT template file.'; } }); e.target.value=''; };
+$('#isgTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.text().then(t=>{ try{ const j=JSON.parse(t); if(j.kind!=='isgott'||!Array.isArray(j.pages)||!j.pages.length) throw 0; isgSave(j.pages.map(b=>dataBytes('x,'+b).buffer), j.name||fl.name); }catch(err){ $('#xpMsg').textContent='Not a valid ISGOTT template file.'; } }); e.target.value=''; };
 async function exportPlan(sel){
   const msg=$('#xpMsg'); msg.textContent='Creating files...';
   try{
@@ -2496,6 +2501,9 @@ function xpOpen(){
   $('#xoMsg').textContent=''; $('#xpModal').hidden=false;
 }
 $('#xpExport').onclick = xpOpen;
+$('#tpBtn').onclick = ()=>$('#tpModal').hidden=false;
+$('#tpClose').onclick = ()=>$('#tpModal').hidden=true;
+$('#tpModal').addEventListener('click',e=>{ if(e.target.id==='tpModal') $('#tpModal').hidden=true; });
 $('#xoCancel').onclick = ()=>$('#xpModal').hidden=true;
 $('#xpModal').addEventListener('click',e=>{ if(e.target.id==='xpModal') $('#xpModal').hidden=true; });
 $('#xoGo').onclick = ()=>{ const sel={}; document.querySelectorAll('#xpOpts [data-xo]').forEach(c=>{ sel[c.dataset.xo]=c.checked&&!c.disabled; });
