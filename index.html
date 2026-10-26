@@ -2506,11 +2506,12 @@ function preFill(P, pg, d){
   if(co){ B(200,604,up(co.name),10,90); tplDate(P,d.date,457,604,9,mon,false,'T'); }
   if(ma){ B(184,668.6,up(ma.name),10,90); tplDate(P,d.date,466.4,668.6,9,mon,false,'T'); }
 }
-// normal size, one page (no 2-in-1)
+// one A4 page (no 2-in-1): the Letter-size template page is scaled to the A4 width and centred
 async function buildPrePdf(d){
-  const P = new MiniPDF.Doc(612, 792);
+  const P = new MiniPDF.Doc(595.25, 842), k = 595.25/612, ty = (842 - 792*k)/2;
+  P.W = 612; P.H = 792; P.ops.push(`q ${k} 0 0 ${k} 0 ${ty} cm`);
   P.image(0, 0, 612, 792, P.addImage(await MiniPDF.loadImage(new Uint8Array(PRE.pages[0]), 'image/jpeg')));
-  preFill(P, 0, d);
+  preFill(P, 0, d); P.endSlot();
   return P.blob();
 }
 $('#preTplBtn').onclick = ()=>$('#preTplFile').click();
