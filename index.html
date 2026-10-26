@@ -1382,6 +1382,7 @@ function blankState(){
   return {v:2, name:'', rhoSW:1.025, zone:'S', inAir:false, lenUnit:'mm', unit:{}, cargo:{}, tanks:{}, ull:{}, trimMode:'calc', obsF:'', obsA:'',
     items: SHIP.constants.map(c=>({...c})), ref:null};
 }
+function toMM(st){ if(st.lenUnit==='mm') return st; for(const id in st.cargo||{}){ const c=st.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*10).toFixed(0); } st.lenUnit='mm'; return st; }
 function exampleState(i){
   const e = EXAMPLES[i], st = blankState();
   st.name = e.name; st.tanks = JSON.parse(JSON.stringify(e.tanks));
@@ -1389,7 +1390,7 @@ function exampleState(i){
   st.items[0].W = e.cons; st.ref = e.ref; if(/Tropic/.test(e.name)) st.zone='T'; return st;
 }
 let S = store.get('lc_current');
-if(!S || S.v!==2){ S = exampleState(0); } else if(!S.lenUnit){ S.lenUnit='cm'; }
+if(!S || S.v!==2){ S = exampleState(0); } else { toMM(S); }
 
 // ---------- cargo math ----------
 let TRIM_USED = 0;
@@ -1813,7 +1814,7 @@ $('#pGo').onclick=async()=>{
 
 // ---------- save / load ----------
 function toast(m){const t=$('#toast'); t.textContent=m; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2200);}
-function loadState(st){ const keepLU=S&&S.lenUnit; S={...blankState(),...JSON.parse(JSON.stringify(st))}; if(!st.lenUnit) S.lenUnit=Object.values(S.cargo||{}).some(c=>c.mode!=='vol'&&c.val)?'cm':(keepLU||'mm'); $('#condName').value=S.name||''; $('#rhoSW').value=S.rhoSW; $('#inAir').checked=!!S.inAir; $('#zone').value=S.zone||'S'; $('#obsF').value=S.obsF||''; $('#obsA').value=S.obsA||''; renderTrimMode(); renderTcRound(); renderDraftRef(); renderGroups(); renderConst(); renderUll(); update(); }
+function loadState(st){ S={...blankState(),...JSON.parse(JSON.stringify(st))}; toMM(S); $('#condName').value=S.name||''; $('#rhoSW').value=S.rhoSW; $('#inAir').checked=!!S.inAir; $('#zone').value=S.zone||'S'; $('#obsF').value=S.obsF||''; $('#obsA').value=S.obsA||''; renderTrimMode(); renderTcRound(); renderDraftRef(); renderGroups(); renderConst(); renderUll(); update(); }
 function savedList(){ return store.get('lc_saved')||[]; }
 function renderSaved(){
   const L=savedList();
