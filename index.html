@@ -2492,7 +2492,7 @@ async function tplPdf(T, PW, PH, fill, d){
   return P.blob();
 }
 const buildIsgPdf = d => tplPdf(ISG, 595.25, 842, isgFill, d);
-// --- Pre-Arrival checklist (D-34): one page; the Terminal box is the berth here ---
+// --- Pre-Arrival checklist (D-34): one page, normal size; the Terminal box is the berth here ---
 const PRE = { pages:null, name:'' };
 async function preLoad(){ try{ const v = await idb('readonly', os=>os.get('prearrival')); if(v&&v.pages){ PRE.pages = v.pages; PRE.name = v.name||''; } }catch(e){} }
 async function preSave(pages,name){ PRE.pages = pages; PRE.name = name; try{ await idb('readwrite', os=>os.put({pages,name},'prearrival')); }catch(e){} toast('Pre-Arrival template saved'); }
@@ -2506,7 +2506,13 @@ function preFill(P, pg, d){
   if(co){ B(200,604,up(co.name),10,90); tplDate(P,d.date,457,604,9,mon,false,'T'); }
   if(ma){ B(184,668.6,up(ma.name),10,90); tplDate(P,d.date,466.4,668.6,9,mon,false,'T'); }
 }
-const buildPrePdf = d => tplPdf(PRE, 612, 792, preFill, d);
+// normal size, one page (no 2-in-1)
+async function buildPrePdf(d){
+  const P = new MiniPDF.Doc(612, 792);
+  P.image(0, 0, 612, 792, P.addImage(await MiniPDF.loadImage(new Uint8Array(PRE.pages[0]), 'image/jpeg')));
+  preFill(P, 0, d);
+  return P.blob();
+}
 $('#preTplBtn').onclick = ()=>$('#preTplFile').click();
 $('#preTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.text().then(t=>{ try{ const j=JSON.parse(t); if(j.kind!=='prearrival'||!Array.isArray(j.pages)||!j.pages.length) throw 0; preSave(j.pages.map(b=>dataBytes('x,'+b).buffer), j.name||fl.name); }catch(err){ $('#xpMsg').textContent='Not a valid Pre-Arrival template file.'; } }); e.target.value=''; };
 $('#isgTplBtn').onclick = ()=>$('#isgTplFile').click();
