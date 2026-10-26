@@ -1874,7 +1874,7 @@ $('#condName').addEventListener('input',()=>{ S.name=$('#condName').value; rende
 function setTheme(v){ if(v) document.documentElement.setAttribute('data-theme',v); else document.documentElement.removeAttribute('data-theme'); document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v||''))); try{localStorage.setItem('lc_theme',v)}catch(e){} }
 $('#themeSeg').onclick=e=>{const b=e.target.closest('button'); if(b) setTheme(b.dataset.v);};
 try{ setTheme(localStorage.getItem('lc_theme')||''); }catch(e){ setTheme(''); }
-function go(id){ document.body.classList.toggle('plan-mode', id==='t-plan'); document.body.classList.toggle('info-mode', id==='t-info'||id==='t-tanks'); if(id==='t-plan') renderPlan(); if(id==='t-info') renderInfo(); document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id===id)); document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===id)); window.scrollTo({top:0}); }
+function go(id){ document.body.classList.toggle('plan-mode', id==='t-plan'); document.body.classList.toggle('info-mode', id==='t-info'||id==='t-tanks'||id==='t-save'||id==='t-set'); if(id==='t-plan') renderPlan(); if(id==='t-info') renderInfo(); document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id===id)); document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===id)); window.scrollTo({top:0}); }
 document.querySelector('nav.tabs').onclick=e=>{const b=e.target.closest('button'); if(b) go(b.dataset.tab);};
 
 // ================= LOADING PLAN (ROB -> Load) =================

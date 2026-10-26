@@ -43,6 +43,6 @@ Everything lives in the single ~660 KB [index.html](index.html) (no modules, no 
 
 ## Releasing changes
 
-The service worker ([sw.js](sw.js)) serves the app page network-first and everything else cache-first. When `index.html` or any other cached asset changes, bump the cache name constant `C` in `sw.js` (currently `titania-lc-v3-18`) so installed phones drop the old cache. Add any new asset files to the `CORE` list in `sw.js`.
+The service worker ([sw.js](sw.js)) serves the app page network-first and everything else cache-first. When `index.html` or any other cached asset changes, bump the cache name constant `C` in `sw.js` (currently `titania-lc-v3-19`) so installed phones drop the old cache. Add any new asset files to the `CORE` list in `sw.js`.
 
 Because the data tables are inlined in `index.html`, edits to calibration or hydrostatic data are single-line edits to the huge `SHIP` line. Use targeted scripted edits (e.g. a Python script that parses and rewrites the JSON) rather than the Edit tool on that line.
