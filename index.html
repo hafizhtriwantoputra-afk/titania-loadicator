@@ -477,7 +477,7 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
   <div class="row" style="margin-bottom:12px"><button class="btn pri" id="btnSave" type="button">Save current condition</button></div>
   <div class="list" id="savedList"></div>
   <div class="row" style="margin-bottom:6px"><button class="btn pri" id="tpBtn" type="button" style="flex:1">Template</button><button class="btn pri" id="xpExport" type="button" style="flex:1">Export</button></div>
-  <input type="file" id="xpTplFile" accept=".xlsx" hidden><input type="file" id="isgTplFile" accept=".json,application/json" hidden>
+  <input type="file" id="xpTplFile" accept=".xlsx" hidden><input type="file" id="isgTplFile" accept=".json,application/json" hidden><input type="file" id="preTplFile" accept=".json,application/json" hidden>
   <p class="note" id="xpMsg"></p>
   <h2>Export / Import</h2>
   <div class="row" style="margin-bottom:8px"><button class="btn sm" id="btnCopy" type="button">Copy condition JSON</button><label class="btn sm" for="fileIn">Open .json file</label><input type="file" id="fileIn" accept=".json,application/json" hidden></div>
@@ -561,6 +561,7 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
   <div class="tp-list">
     <button class="btn tp-it" id="xpTplBtn" type="button"><b>Loading Plan (Excel)</b></button>
     <button class="btn tp-it" id="isgTplBtn" type="button"><b>Ship Shore Checklist</b></button>
+    <button class="btn tp-it" id="preTplBtn" type="button"><b>Pre-Arrival Checklist</b></button>
   </div>
   <div class="row" style="justify-content:flex-end"><button class="btn" id="tpClose" type="button">Close</button></div>
 </div></div>
@@ -572,6 +573,7 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
     <label><input type="checkbox" data-xo="xl" checked> Loading Plan (Excel) <small data-xn="xl"></small></label>
     <label><input type="checkbox" data-xo="hr" checked> Hourly Record <small data-xn="hr"></small></label>
     <label><input type="checkbox" data-xo="isg" checked> Ship Shore C/L <small data-xn="isg"></small></label>
+    <label><input type="checkbox" data-xo="pre" checked> Pre-Arrival C/L <small data-xn="pre"></small></label>
   </div>
   <div class="row" style="justify-content:flex-end"><button class="btn" id="xoCancel" type="button">Cancel</button><button class="btn pri" id="xoGo" type="button">Save</button></div>
   <p class="note" id="xoMsg" style="margin:8px 0 0"></p>
@@ -2458,11 +2460,13 @@ function isgShow(){ const e=$('#isgTpl'); if(e) e.textContent = ISG.pages ? 'ISG
 const isgDate = (iso, mon) => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||''); if(!m) return null; const d=+m[3], suf=(d%100>=11&&d%100<=13)?'th':({1:'st',2:'nd',3:'rd'})[d%10]||'th'; return { d:String(d), suf, rest:' '+mon[+m[2]-1]+' '+m[1] }; };
 // the Terminal box in the app is the berth (HELIOS # 6, OMU 6, TANK STORE 6W); the terminal name is the part before the number or #
 const isgTerm = t => { const x=String(t||'').trim(), n=x.replace(/\s*(#|\d).*$/,'').trim(); return (n||x).toUpperCase(); };
+// date like 21ST OCTOBER 2026 with the small raised ordinal, as in the Word files
+function tplDate(P, iso, x, y, sz, mon, up, fam){ const q=isgDate(iso,mon); if(!q) return; const sf=up?q.suf.toUpperCase():q.suf, ss=sz*0.62, W=(t,z)=>MiniPDF.width(t,z,true,fam,false), T=(xx,yy,t,z)=>P.text(xx,yy,t,{size:z,bold:true,fam});
+  T(x,y,q.d,sz); let w=W(q.d,sz); T(x+w,y-sz*0.36,sf,ss); w+=W(sf,ss); T(x+w,y,q.rest,sz); }
 // x and y (baseline, from the top of the page) were measured on the template pages: page 1 header, page 6 Declaration
 function isgFill(P, pg, d){
   const B = (x,y,t,sz,maxW) => P.text(x,y,t,{size:sz,bold:true,maxW});
-  const dt = (x,y,sz,mon,up) => { const q=isgDate(d.date,mon); if(!q) return; const sf=up?q.suf.toUpperCase():q.suf, ss=sz*0.62, W=(t,z)=>MiniPDF.width(t,z,true,'H',false);
-    B(x,y,q.d,sz); let w=W(q.d,sz); P.text(x+w,y-sz*0.36,sf,{size:ss,bold:true}); w+=W(sf,ss); B(x+w,y,q.rest,sz); };
+  const dt = (x,y,sz,mon,up) => tplDate(P,d.date,x,y,sz,mon,up,'H');
   const up = t => String(t||'').trim().toUpperCase(), berth = up(d.terminal), term = isgTerm(d.terminal);
   if(pg===0){
     dt(196.8,108,10,ISG_MON,true);
@@ -2476,17 +2480,35 @@ function isgFill(P, pg, d){
     dt(331.2,781.5,9,['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],false);
   }
 }
-async function buildIsgPdf(d){
+async function tplPdf(T, PW, PH, fill, d){
   const P = new MiniPDF.Doc(); P.pages.length = 0; P.flipBack = true;
-  const PW = 595.25, PH = 842, k = Math.min(421/PW, 595/PH); let open = false;
-  for(let i=0;i<ISG.pages.length;i++){
+  const k = Math.min(421/PW, 595/PH); let open = false;
+  for(let i=0;i<T.pages.length;i++){
     if(open) P.endSlot(); P.slotPage(PW, PH, 842, 595, i%2, k); open = true;
-    P.image(0, 0, PW, PH, P.addImage(await MiniPDF.loadImage(new Uint8Array(ISG.pages[i]), 'image/jpeg')));
-    isgFill(P, i, d);
+    P.image(0, 0, PW, PH, P.addImage(await MiniPDF.loadImage(new Uint8Array(T.pages[i]), 'image/jpeg')));
+    fill(P, i, d);
   }
   if(open) P.endSlot();
   return P.blob();
 }
+const buildIsgPdf = d => tplPdf(ISG, 595.25, 842, isgFill, d);
+// --- Pre-Arrival checklist (D-34): one page; the Terminal box is the berth here ---
+const PRE = { pages:null, name:'' };
+async function preLoad(){ try{ const v = await idb('readonly', os=>os.get('prearrival')); if(v&&v.pages){ PRE.pages = v.pages; PRE.name = v.name||''; } }catch(e){} }
+async function preSave(pages,name){ PRE.pages = pages; PRE.name = name; try{ await idb('readwrite', os=>os.put({pages,name},'prearrival')); }catch(e){} toast('Pre-Arrival template saved'); }
+function preFill(P, pg, d){
+  if(pg!==0) return;
+  const up = t => String(t||'').trim().toUpperCase(), B = (x,y,t,sz,maxW) => P.text(x,y,t,{size:sz,bold:true,fam:'T',maxW});
+  const by = r => [d.w&&d.w.o1, d.w&&d.w.o2].find(c=>c&&c.rank===r) || CREW.list.find(c=>c.rank===r) || null, co = by('Ch. Officer'), ma = by('Master');
+  const mon = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  tplDate(P,d.date,170.1,107.6,11,mon,false,'T'); if(d.terminal) B(422.2,107.6,up(d.terminal),11,150);
+  if(co) B(167.6,120.6,up(co.name),11,150); if(ma) B(422.2,120.6,up(ma.name),11,150);
+  if(co){ B(200,604,up(co.name),10,90); tplDate(P,d.date,457,604,9,mon,false,'T'); }
+  if(ma){ B(184,668.6,up(ma.name),10,90); tplDate(P,d.date,466.4,668.6,9,mon,false,'T'); }
+}
+const buildPrePdf = d => tplPdf(PRE, 612, 792, preFill, d);
+$('#preTplBtn').onclick = ()=>$('#preTplFile').click();
+$('#preTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.text().then(t=>{ try{ const j=JSON.parse(t); if(j.kind!=='prearrival'||!Array.isArray(j.pages)||!j.pages.length) throw 0; preSave(j.pages.map(b=>dataBytes('x,'+b).buffer), j.name||fl.name); }catch(err){ $('#xpMsg').textContent='Not a valid Pre-Arrival template file.'; } }); e.target.value=''; };
 $('#isgTplBtn').onclick = ()=>$('#isgTplFile').click();
 $('#isgTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.text().then(t=>{ try{ const j=JSON.parse(t); if(j.kind!=='isgott'||!Array.isArray(j.pages)||!j.pages.length) throw 0; isgSave(j.pages.map(b=>dataBytes('x,'+b).buffer), j.name||fl.name); }catch(err){ $('#xpMsg').textContent='Not a valid ISGOTT template file.'; } }); e.target.value=''; };
 // one tap saves everything: the app's download bridge, else the share sheet on phones, else one download after another
@@ -2501,7 +2523,7 @@ async function exportPlan(sel){
   const msg=$('#xpMsg'); msg.textContent='Creating files...';
   try{
     const d = planData(), base = ['Loading Plan', d.port, d.terminal, d.grade, d.mt!=null?d.mt+' MT':'', d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'');
-    let pdf = null, pdf2 = null, xl = null, isg = null, note = '';
+    let pdf = null, pdf2 = null, xl = null, isg = null, pre = null, note = '';
     if(TPL.bytes && (sel.lp || sel.xl || sel.hr)){
       const sg = sigMaps(d), conv = {}; for(const sh in sg){ conv[sh] = {}; for(const k in sg[sh]) conv[sh][k] = await sigPng(sg[sh][k]); }
       const res = await PlanXlsx.fill(TPL.bytes, xlEdits(d), { over: xlOver(d), strip: true, sigs: conv, slotOf: sigSlotOf, fills: { 'xl/worksheets/sheet2.xml': xlFills(d) }, borderFix: { 'xl/worksheets/sheet2.xml': [['A88','B88'], ['A90','B90']] } }); xl = res.blob;
@@ -2509,15 +2531,16 @@ async function exportPlan(sel){
       catch(e){ console.error(e); if(sel.lp) pdf = buildPlanPdf(d); pdf2 = null; note = 'Simple Loading Plan PDF (could not copy the Excel layout: '+(e&&e.message||e)+'). '; }
     } else if(sel.lp){ pdf = buildPlanPdf(d); note = 'Simple Loading Plan PDF (no Excel template). '; }
     if(sel.isg) isg = await buildIsgPdf(d);
+    if(sel.pre) pre = await buildPrePdf(d);
     window.__lastExport = { xl, pdf, pdf2, isg };
     // browsers allow one download per tap, so every file gets its own button (phones can also share all at once)
-    XP_FILES = [sel.lp && pdf && [pdf, base+'.pdf', 'Loading Plan PDF'], sel.hr && pdf2 && [pdf2, base+' - Hourly.pdf', 'Hourly PDF'], sel.xl && xl && [xl, base+'.xlsx', 'Excel'], isg && [isg, ['ISGOTT Checklist', d.port, d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'')+'.pdf', 'Ship Shore C/L']].filter(Boolean);
+    XP_FILES = [sel.lp && pdf && [pdf, base+'.pdf', 'Loading Plan PDF'], sel.hr && pdf2 && [pdf2, base+' - Hourly.pdf', 'Hourly PDF'], sel.xl && xl && [xl, base+'.xlsx', 'Excel'], isg && [isg, ['ISGOTT Checklist', d.port, d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'')+'.pdf', 'Ship Shore C/L'], pre && [pre, ['Pre-Arrival Checklist', d.port, d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'')+'.pdf', 'Pre-Arrival C/L']].filter(Boolean);
     let how = ''; try{ how = await xpDeliver(XP_FILES); }catch(e){ how = e && e.code==='declined' ? 'cancelled' : 'error'; console.error(e); }
     msg.textContent = note + XP_FILES.length + ' file' + (XP_FILES.length===1?'':'s') + ' ready.' + (how==='cancelled' ? ' Save cancelled.' : how==='error' ? ' Could not save here, tap Export again.' : '');
   }catch(e){ console.error(e); msg.textContent = 'Failed: '+(e&&e.message||e); }
 }
 function xpOpen(){
-  const need = { xl:!TPL.bytes, hr:!TPL.bytes, isg:!ISG.pages }, txt = { xl:'(choose the Excel template)', hr:'(choose the Excel template)', isg:'(choose the ISGOTT template)' };
+  const need = { xl:!TPL.bytes, hr:!TPL.bytes, isg:!ISG.pages, pre:!PRE.pages }, txt = { xl:'(choose the Excel template)', hr:'(choose the Excel template)', isg:'(choose the template)', pre:'(choose the template)' };
   document.querySelectorAll('#xpOpts [data-xo]').forEach(c=>{ const k=c.dataset.xo, off=!!need[k]; c.disabled=off; if(off) c.checked=false; const n=document.querySelector('[data-xn="'+k+'"]'); if(n) n.textContent=off?txt[k]:''; });
   $('#xoMsg').textContent=''; $('#xpModal').hidden=false;
 }
@@ -2532,7 +2555,7 @@ $('#xoGo').onclick = ()=>{ const sel={}; document.querySelectorAll('#xpOpts [dat
   $('#xpModal').hidden=true; exportPlan(sel); };
 $('#xpTplBtn').onclick = ()=>$('#xpTplFile').click();
 $('#xpTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.arrayBuffer().then(b=>{ try{ PlanXlsx.readZip(new Uint8Array(b)); tplSave(new Uint8Array(b), fl.name); }catch(err){ $('#xpMsg').textContent='Not a valid .xlsx file.'; } }); e.target.value=''; };
-tplLoad(); isgLoad();
+tplLoad(); isgLoad(); preLoad();
 
 document.querySelectorAll('#t-set details[data-sg]').forEach(d=>{ if((store.get('lc_open')||{})['set_'+d.dataset.sg]===false) d.open=false; d.querySelector('summary').addEventListener('click',()=>setTimeout(()=>{ const o=store.get('lc_open')||{}; o['set_'+d.dataset.sg]=d.open; store.set('lc_open',o); })); });
 loadState(S); renderSaved(); renderInfo();
