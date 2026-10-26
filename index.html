@@ -1383,9 +1383,10 @@ function blankState(){
   return {v:2, name:'', rhoSW:1.025, zone:'S', inAir:false, lenUnit:'mm', unit:{}, cargo:{}, tanks:{}, ull:{}, trimMode:'calc', obsF:'', obsA:'',
     items: SHIP.constants.map(c=>({...c})), ref:null};
 }
-function toMM(st){ if(st.lenUnit==='mm'||st.luSet) return st; for(const id in st.cargo||{}){ const c=st.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*10).toFixed(0); } st.lenUnit='mm'; return st; }
-function setLU(nu){ if(nu===LU()) return; const f=nu==='mm'?10:0.1; for(const id in S.cargo){ const c=S.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*f).toFixed(nu==='mm'?0:1); } S.lenUnit=nu; S.luSet=true; renderUll(); update(); renderPlan(); }
-document.addEventListener('change',e=>{ if(e.target.id==='plLU') setLU(e.target.value); });
+function toMM(st){ if(st.lenUnit==='mm'||st.luSet) return st; for(const id in st.cargo||{}){ const c=st.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*10).toFixed(0); } const rb=st.plan&&st.plan.rob; if(rb&&rb.mode&&rb.mode!=='vol'&&rb.t) for(const id in rb.t){ const c=rb.t[id]; if(c&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*10).toFixed(0); } st.lenUnit='mm'; return st; }
+function setLU(nu){ if(nu===LU()) return; const f=nu==='mm'?10:0.1; for(const id in S.cargo){ const c=S.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*f).toFixed(nu==='mm'?0:1); } const rb=PLs().rob; if(rb.mode!=='vol') for(const id in rb.t){ const c=rb.t[id]; if(c&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*f).toFixed(nu==='mm'?0:1); } S.lenUnit=nu; S.luSet=true; renderUll(); update(); renderPlan(); }
+document.addEventListener('change',e=>{ if(e.target.classList&&e.target.classList.contains('lu-sel')) setLU(e.target.value); });
+const luSel=pre=>`<select class="lu-sel" aria-label="Unit"><option value="mm" ${isMM()?'selected':''}>${pre}mm</option><option value="cm" ${!isMM()?'selected':''}>${pre}cm</option></select>`;
 function exampleState(i){
   const e = EXAMPLES[i], st = blankState();
   st.name = e.name; st.tanks = JSON.parse(JSON.stringify(e.tanks));
@@ -1953,10 +1954,10 @@ function renderPlan(){
   // ROB cargo
   ['rho','temp','obsA','obsF'].forEach(k=>{ const el=document.querySelector(`[data-rk="${k}"]`); if(el) el.value=P.rob[k]??''; });
   document.querySelectorAll('#plRobMode button').forEach(b=>b.classList.toggle('on',b.dataset.v===P.rob.mode));
-  document.querySelectorAll('.robValH').forEach(h=>{ h.textContent = P.rob.mode==='vol' ? 'TOV m³' : (P.rob.mode==='ull'?'Ullage ':'Snd ')+LU(); });
+  document.querySelectorAll('.robValH').forEach(h=>{ h.innerHTML = P.rob.mode==='vol' ? 'TOV m³' : luSel(P.rob.mode==='ull'?'Ullage ':'Snd '); });
   const robRow=t=>`<tr><td>${t.name}</td><td><input class="n s" data-rt="${t.id}" inputmode="decimal" value="${(P.rob.t[t.id]||{}).val??''}" aria-label="ROB ${t.name}"></td><td id="rbc-${t.id}"></td><td id="rbv-${t.id}"></td><td id="rbm-${t.id}"></td></tr>`;
   $('#plRobBody').innerHTML = CARGO_MAIN.map(robRow).join('');
-  const vH=(P.rob.mode==='vol' ? 'TOV m³' : (P.rob.mode==='ull'?'Ullage ':'Snd ')+LU()), oo=P.robOpen||{};
+  const vH=(P.rob.mode==='vol' ? 'TOV m³' : luSel(P.rob.mode==='ull'?'Ullage ':'Snd ')), oo=P.robOpen||{};
   $('#plRobExtra').innerHTML = EXTRA_G.filter(g=>g[2].length).map(([k,lbl,ts])=>`<details class="group" data-rg="${k}" ${oo[k]?'open':''}><summary><span class="g-title">${lbl} ROB</span><span class="g-sum" id="exs-${k}"></span><span class="chev">›</span></summary><div class="pl-body"><div class="tbl-wrap"><table class="pl-tbl"><thead><tr><th>Tank</th><th class="robValH">${vH}</th><th>Corr</th><th>TOV m³</th><th>MT air</th></tr></thead><tbody>${ts.map(robRow).join('')}</tbody></table></div></div></details>`).join('');
   // ROB other groups
   const open = P.robOpen || {};
@@ -1970,7 +1971,7 @@ function renderPlan(){
 function renderSeq(k){
   const P=PLs(), Q=P.seq[k];
   $('#plSeqSub').textContent = (k===3 ? 'Final (Seq 4)' : 'Sequence '+(k+1));
-  $('#plSdgH').innerHTML = `<select id="plLU" class="lu-sel" aria-label="SDG unit"><option value="mm" ${isMM()?'selected':''}>SDG mm</option><option value="cm" ${!isMM()?'selected':''}>SDG cm</option></select>`;
+  $('#plSdgH').innerHTML = luSel('SDG ');
   const seqRow=t=>`<tr class="${/^COTK[234]/.test(t.id)?'main':''}"><td>${shortN(t)}</td><td id="sdp-${t.id}"></td><td><input class="n s" data-sc="${t.id}" inputmode="decimal" value="${Q.c[t.id]!=null&&Q.c[t.id]!==''?+fromCm(+Q.c[t.id]).toFixed(isMM()?0:1):''}" aria-label="SDG ${t.name}"></td><td id="sdv-${t.id}"></td><td id="sdq-${t.id}"></td><td id="sdd-${t.id}"></td></tr>`;
   $('#plDistBody').innerHTML = CARGO_MAIN.map(seqRow).join('');
   const so=P.robOpen||{};
