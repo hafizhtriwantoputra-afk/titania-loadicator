@@ -910,7 +910,7 @@ const MiniPDF = (() => {
         const c = pg.ops.join('\n'), cid = add(`<< /Length ${c.length} >>\nstream\n${c}\nendstream`);
         const pid = add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pg.w} ${pg.h}] /Resources ${res} /Contents ${cid} 0 R >>`); kids.push(pid + ' 0 R');
       });
-      objs[0] = '<< /Type /Catalog /Pages 2 0 R >>'; objs[1] = `<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${kids.length} >>`;
+      objs[0] = '<< /Type /Catalog /Pages 2 0 R' + (this.duplexShort ? ' /ViewerPreferences << /Duplex /DuplexFlipShortEdge /PrintScaling /None >>' : '') + ' >>'; objs[1] = `<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${kids.length} >>`;
       let out = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'; const offs = [];
       objs.forEach((o, i) => { offs.push(out.length); out += `${i + 1} 0 obj\n${typeof o === 'string' ? o : o.dict + '\nstream\n' + latin(o.data) + '\nendstream'}\nendobj\n`; });
       const xref = out.length;
@@ -2404,7 +2404,7 @@ async function buildSheetPdf(tpl, res, names, nup, sigs){
   [...wb.getElementsByTagNameNS('*','definedName')].filter(n => n.getAttribute('name')==='_xlnm.Print_Area').forEach(n => { const m = /^'?([^'!]+)'?!\$?([A-Z]+)\$?(\d+):\$?([A-Z]+)\$?(\d+)$/.exec(n.textContent.trim()); if(m) areas[m[1]] = [SheetCalc.colN(m[2]), +m[3], SheetCalc.colN(m[4]), +m[5]]; });
   const media = {}; for(const n in by) if(/^xl\/media\//.test(n)) media[n] = await raw(n);
   const norm = (base, t) => { const parts = base.split('/'); parts.pop(); t.split('/').forEach(p => { if(p==='..') parts.pop(); else if(p!=='.') parts.push(p); }); return parts.join('/'); };
-  const P = new MiniPDF.Doc(); P.pages.length = 0; const ropt = nup ? { nup: { n: 0, open: false } } : {}; const fileOf = {}; for(const f in res.fileName) fileOf[res.fileName[f]] = f;
+  const P = new MiniPDF.Doc(); P.pages.length = 0; P.duplexShort = true; const ropt = nup ? { nup: { n: 0, open: false } } : {}; const fileOf = {}; for(const f in res.fileName) fileOf[res.fileName[f]] = f;
   for(const name of names){
     const file = fileOf[name]; if(!file || !res.texts[file]) continue;
     const base = file.split('/').pop(), relXml = await rd('xl/worksheets/_rels/'+base+'.rels'); let drawXml = null, drawRels = null, drawPath = null;
