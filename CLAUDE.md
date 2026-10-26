@@ -20,7 +20,7 @@ python3 -m http.server 8000
 
 ## Architecture
 
-Everything lives in the single ~1.1 MB [index.html](index.html) (no modules, no bundler). Do not read it whole; use `grep -n` / ranged reads. Lines 1364 and 1365 are enormous (~414 KB and ~9 KB of JSON) and will blow up any full-line output, so cut them (`cut -c1-300`). Line numbers drift as the file grows; find parts with `grep -n "^<script>"`. The file has these parts, in order:
+Everything lives in the single ~660 KB [index.html](index.html) (no modules, no bundler). Do not read it whole; use `grep -n` / ranged reads. Lines 1366 and 1367 are enormous (~414 KB and ~9 KB of JSON) and will blow up any full-line output, so cut them (`cut -c1-300`). Line numbers drift as the file grows; find parts with `grep -n "^<script>"`. The file has these parts, in order:
 
 1. **CSS and markup** (top to ~line 570): six tab sections: `t-info` (default), `t-tanks`, `t-plan`, `t-res`, `t-save`, `t-set`.
 2. **Engine** (first `<script>`, an IIFE exposing `LC`): pure calculation with no DOM access. Interpolation helpers, cargo volume correction (`vcf`), per-tank properties from calibration tables (`tankProps`, `trimCorr`), hydrostatic equilibrium (`equilibrium`, `hydAt`), KN cross-curves, `compute(S, cond)` (weights/moments, GM, stability, weather criterion, propeller/visibility) and `strength` (SF/BM from Bonjean data).
