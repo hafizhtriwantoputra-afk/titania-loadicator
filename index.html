@@ -44,6 +44,7 @@ body.info-mode header.readout,body.info-mode .profile{display:none}
 .watch-box .wn{color:var(--bad)}
 .field input[readonly]{background:var(--bg);color:var(--muted)}#plSeqView .pl-tbl .bset{white-space:nowrap;text-align:center;padding:5px 0}
 #plSeqView .bset .btn.sm{padding:3px 4px;font-size:10.5px;margin:0 1px}
+.lu-sel{font:inherit;font-weight:inherit;text-transform:inherit;letter-spacing:inherit;color:inherit;background:transparent;border:0;padding:0;margin:0;cursor:pointer;-webkit-appearance:menulist}
 #plBalBody input.n.s{width:40px;padding:6px 2px}
 #plBalBody td:nth-child(2){font-size:10.5px}
 .bmin{display:block;font-size:10px;color:var(--muted)}
@@ -1382,7 +1383,9 @@ function blankState(){
   return {v:2, name:'', rhoSW:1.025, zone:'S', inAir:false, lenUnit:'mm', unit:{}, cargo:{}, tanks:{}, ull:{}, trimMode:'calc', obsF:'', obsA:'',
     items: SHIP.constants.map(c=>({...c})), ref:null};
 }
-function toMM(st){ if(st.lenUnit==='mm') return st; for(const id in st.cargo||{}){ const c=st.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*10).toFixed(0); } st.lenUnit='mm'; return st; }
+function toMM(st){ if(st.lenUnit==='mm'||st.luSet) return st; for(const id in st.cargo||{}){ const c=st.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*10).toFixed(0); } st.lenUnit='mm'; return st; }
+function setLU(nu){ if(nu===LU()) return; const f=nu==='mm'?10:0.1; for(const id in S.cargo){ const c=S.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*f).toFixed(nu==='mm'?0:1); } S.lenUnit=nu; S.luSet=true; renderUll(); update(); renderPlan(); }
+document.addEventListener('change',e=>{ if(e.target.id==='plLU') setLU(e.target.value); });
 function exampleState(i){
   const e = EXAMPLES[i], st = blankState();
   st.name = e.name; st.tanks = JSON.parse(JSON.stringify(e.tanks));
@@ -1967,7 +1970,7 @@ function renderPlan(){
 function renderSeq(k){
   const P=PLs(), Q=P.seq[k];
   $('#plSeqSub').textContent = (k===3 ? 'Final (Seq 4)' : 'Sequence '+(k+1));
-  $('#plSdgH').textContent = 'SDG '+LU();
+  $('#plSdgH').innerHTML = `<select id="plLU" class="lu-sel" aria-label="SDG unit"><option value="mm" ${isMM()?'selected':''}>SDG mm</option><option value="cm" ${!isMM()?'selected':''}>SDG cm</option></select>`;
   const seqRow=t=>`<tr class="${/^COTK[234]/.test(t.id)?'main':''}"><td>${shortN(t)}</td><td id="sdp-${t.id}"></td><td><input class="n s" data-sc="${t.id}" inputmode="decimal" value="${Q.c[t.id]!=null&&Q.c[t.id]!==''?+fromCm(+Q.c[t.id]).toFixed(isMM()?0:1):''}" aria-label="SDG ${t.name}"></td><td id="sdv-${t.id}"></td><td id="sdq-${t.id}"></td><td id="sdd-${t.id}"></td></tr>`;
   $('#plDistBody').innerHTML = CARGO_MAIN.map(seqRow).join('');
   const so=P.robOpen||{};
