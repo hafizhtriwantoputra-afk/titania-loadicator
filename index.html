@@ -476,19 +476,14 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
   <div class="row" style="margin-bottom:12px"><button class="btn pri" id="btnSave" type="button">Save current condition</button></div>
   <div class="list" id="savedList"></div>
   <h2>Export Loading Plan</h2>
-  <p class="sub">Creates 3 files: the Loading Plan PDF (2-in-1), the Hourly PDF and an Excel file made from your template. The template is stored only on this phone.</p>
+  <p class="sub">Choose the files to create: Loading Plan PDF (2-in-1), Loading Plan Excel, Hourly Record and the Ship/Shore Safety Checklist. The templates are stored only on this phone.</p>
   <p class="note" id="xpTpl"></p>
   <div class="row" style="margin-bottom:8px"><button class="btn sm" id="xpTplBtn" type="button">Choose Excel template</button><input type="file" id="xpTplFile" accept=".xlsx" hidden></div>
-  <div class="row" style="margin-bottom:6px"><button class="btn pri" id="xpExport" type="button">Export Excel + PDF</button></div>
-  <p class="note" id="xpMsg"></p>
-  <div class="row" id="xpFiles" style="flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
-  <h2>ISGOTT Checklist</h2>
-  <p class="sub">Ship/Shore Safety Checklist (D-01) as a PDF, 2-in-1. Only the date, port and berth, terminal and the Declaration name, rank and date are filled in. The template pages are stored only on this phone.</p>
   <p class="note" id="isgTpl"></p>
   <div class="row" style="margin-bottom:8px"><button class="btn sm" id="isgTplBtn" type="button">Choose ISGOTT template</button><input type="file" id="isgTplFile" accept=".json,application/json" hidden></div>
-  <div class="row" style="margin-bottom:6px"><button class="btn pri" id="isgExport" type="button">Create ISGOTT PDF</button></div>
-  <p class="note" id="isgMsg"></p>
-  <div class="row" id="isgFiles" style="flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+  <div class="row" style="margin-bottom:6px"><button class="btn pri" id="xpExport" type="button">Export</button></div>
+  <p class="note" id="xpMsg"></p>
+  <div class="row" id="xpFiles" style="flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
   <h2>Export / Import</h2>
   <div class="row" style="margin-bottom:8px"><button class="btn sm" id="btnCopy" type="button">Copy condition JSON</button><label class="btn sm" for="fileIn">Open .json file</label><input type="file" id="fileIn" accept=".json,application/json" hidden></div>
   <textarea id="jsonBox" placeholder="Paste condition JSON here, then tap Import" aria-label="Condition JSON"></textarea>
@@ -550,6 +545,18 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
   <button data-tab="t-set" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Settings</button>
 </div></nav>
 
+<div class="modal" id="xpModal" hidden><div class="box" role="dialog" aria-labelledby="xpTitle">
+  <h3 id="xpTitle">Export Loading Plan</h3>
+  <p class="sub" style="margin:0 0 6px">Choose the files to create.</p>
+  <div class="checks-opt" id="xpOpts" style="margin-bottom:12px">
+    <label><input type="checkbox" data-xo="lp" checked> Loading Plan (PDF)</label>
+    <label><input type="checkbox" data-xo="xl" checked> Loading Plan (Excel) <small data-xn="xl"></small></label>
+    <label><input type="checkbox" data-xo="hr" checked> Hourly Record <small data-xn="hr"></small></label>
+    <label><input type="checkbox" data-xo="isg" checked> Ship Shore C/L <small data-xn="isg"></small></label>
+  </div>
+  <div class="row" style="justify-content:flex-end"><button class="btn" id="xoCancel" type="button">Cancel</button><button class="btn pri" id="xoGo" type="button">Save</button></div>
+  <p class="note" id="xoMsg" style="margin:8px 0 0"></p>
+</div></div>
 <div class="modal" id="pdfModal" hidden><div class="box" role="dialog" aria-labelledby="pdfTitle">
   <h3 id="pdfTitle">Save PDF report</h3>
   <p class="sub" style="margin:0 0 6px">Choose what goes into the report.</p>
@@ -2461,43 +2468,41 @@ async function buildIsgPdf(d){
   if(open) P.endSlot();
   return P.blob();
 }
-let ISG_OUT = null;
-async function isgExport(){
-  const msg=$('#isgMsg'); if(!ISG.pages){ msg.textContent='Choose the ISGOTT template first.'; return; }
-  msg.textContent='Creating PDF...';
-  try{
-    const d = planData(), blob = await buildIsgPdf(d), name = ['ISGOTT Checklist', d.port, d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'')+'.pdf';
-    ISG_OUT = [blob, name]; window.__isgPdf = blob;
-    $('#isgFiles').innerHTML = '<button class="btn sm pri" type="button" data-isgdl="1">Save ISGOTT PDF</button>';
-    msg.textContent = 'ISGOTT PDF ready ('+Math.round(blob.size/1024)+' KB). Tap Save.';
-  }catch(e){ console.error(e); msg.textContent = 'Failed: '+(e&&e.message||e); }
-}
 $('#isgTplBtn').onclick = ()=>$('#isgTplFile').click();
 $('#isgTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.text().then(t=>{ try{ const j=JSON.parse(t); if(j.kind!=='isgott'||!Array.isArray(j.pages)||!j.pages.length) throw 0; isgSave(j.pages.map(b=>dataBytes('x,'+b).buffer), j.name||fl.name); }catch(err){ $('#isgMsg').textContent='Not a valid ISGOTT template file.'; } }); e.target.value=''; };
-$('#isgExport').onclick = isgExport;
-$('#isgFiles').addEventListener('click', e => { if(e.target.closest('[data-isgdl]') && ISG_OUT) saveBlob(ISG_OUT[0], ISG_OUT[1]); });
-async function exportPlan(){
+async function exportPlan(sel){
   const msg=$('#xpMsg'); msg.textContent='Creating files...';
   try{
     const d = planData(), base = ['Loading Plan', d.port, d.terminal, d.grade, d.mt!=null?d.mt+' MT':'', d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'');
-    let pdf, pdf2 = null, xl = null, note = '';
-    if(TPL.bytes){
+    let pdf = null, pdf2 = null, xl = null, isg = null, note = '';
+    if(TPL.bytes && (sel.lp || sel.xl || sel.hr)){
       const sg = sigMaps(d), conv = {}; for(const sh in sg){ conv[sh] = {}; for(const k in sg[sh]) conv[sh][k] = await sigPng(sg[sh][k]); }
       const res = await PlanXlsx.fill(TPL.bytes, xlEdits(d), { over: xlOver(d), strip: true, sigs: conv, slotOf: sigSlotOf, fills: { 'xl/worksheets/sheet2.xml': xlFills(d) }, borderFix: { 'xl/worksheets/sheet2.xml': [['A88','B88'], ['A90','B90']] } }); xl = res.blob;
-      try{ pdf = await buildSheetPdf(TPL.bytes, res, ['Sheet1'], true, sg); pdf2 = await buildSheetPdf(TPL.bytes, res, ['HOURLY'], false, sg); note = '3 files ready: Loading Plan PDF, Hourly PDF and Excel.'; }
-      catch(e){ console.error(e); pdf = buildPlanPdf(d); pdf2 = null; note = 'Simple PDF (could not copy the Excel layout: '+(e&&e.message||e)+'). Excel created.'; }
-    } else { pdf = buildPlanPdf(d); note = 'PDF created. No Excel: choose the template first.'; }
-    window.__lastExport = { xl, pdf, pdf2 };
-    // browsers allow one download per tap, so every file gets its own button (phones can also share all three at once)
-    XP_FILES = [[pdf, base+'.pdf', 'Loading Plan PDF'], pdf2 && [pdf2, base+' - Hourly.pdf', 'Hourly PDF'], xl && [xl, base+'.xlsx', 'Excel']].filter(Boolean);
+      try{ if(sel.lp) pdf = await buildSheetPdf(TPL.bytes, res, ['Sheet1'], true, sg); if(sel.hr) pdf2 = await buildSheetPdf(TPL.bytes, res, ['HOURLY'], false, sg); }
+      catch(e){ console.error(e); if(sel.lp) pdf = buildPlanPdf(d); pdf2 = null; note = 'Simple Loading Plan PDF (could not copy the Excel layout: '+(e&&e.message||e)+'). '; }
+    } else if(sel.lp){ pdf = buildPlanPdf(d); note = 'Simple Loading Plan PDF (no Excel template). '; }
+    if(sel.isg) isg = await buildIsgPdf(d);
+    window.__lastExport = { xl, pdf, pdf2, isg };
+    // browsers allow one download per tap, so every file gets its own button (phones can also share all at once)
+    XP_FILES = [sel.lp && pdf && [pdf, base+'.pdf', 'Loading Plan PDF'], sel.hr && pdf2 && [pdf2, base+' - Hourly.pdf', 'Hourly PDF'], sel.xl && xl && [xl, base+'.xlsx', 'Excel'], isg && [isg, ['ISGOTT Checklist', d.port, d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'')+'.pdf', 'Ship Shore C/L']].filter(Boolean);
     const canShare = !!(navigator.canShare && navigator.canShare({ files: XP_FILES.map(f => new File([f[0]], f[1], { type: f[0].type })) }));
     $('#xpFiles').innerHTML = XP_FILES.map((f,i) => `<button class="btn sm" type="button" data-xdl="${i}">Save ${f[2]}</button>`).join('') + (canShare ? '<button class="btn sm pri" type="button" data-xshare="1">Share all</button>' : '');
-    msg.textContent = note + ' Tap each button below to save the files.';
+    msg.textContent = note + XP_FILES.length + ' file' + (XP_FILES.length===1?'':'s') + ' ready. Tap each button below to save.';
   }catch(e){ console.error(e); msg.textContent = 'Failed: '+(e&&e.message||e); }
 }
+function xpOpen(){
+  const need = { xl:!TPL.bytes, hr:!TPL.bytes, isg:!ISG.pages }, txt = { xl:'(choose the Excel template)', hr:'(choose the Excel template)', isg:'(choose the ISGOTT template)' };
+  document.querySelectorAll('#xpOpts [data-xo]').forEach(c=>{ const k=c.dataset.xo, off=!!need[k]; c.disabled=off; if(off) c.checked=false; const n=document.querySelector('[data-xn="'+k+'"]'); if(n) n.textContent=off?txt[k]:''; });
+  $('#xoMsg').textContent=''; $('#xpModal').hidden=false;
+}
+$('#xpExport').onclick = xpOpen;
+$('#xoCancel').onclick = ()=>$('#xpModal').hidden=true;
+$('#xpModal').addEventListener('click',e=>{ if(e.target.id==='xpModal') $('#xpModal').hidden=true; });
+$('#xoGo').onclick = ()=>{ const sel={}; document.querySelectorAll('#xpOpts [data-xo]').forEach(c=>{ sel[c.dataset.xo]=c.checked&&!c.disabled; });
+  if(!Object.values(sel).some(Boolean)){ $('#xoMsg').textContent='Choose at least one file.'; return; }
+  $('#xpModal').hidden=true; exportPlan(sel); };
 $('#xpTplBtn').onclick = ()=>$('#xpTplFile').click();
 $('#xpTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.arrayBuffer().then(b=>{ try{ PlanXlsx.readZip(new Uint8Array(b)); tplSave(new Uint8Array(b), fl.name); }catch(err){ $('#xpMsg').textContent='Not a valid .xlsx file.'; } }); e.target.value=''; };
-$('#xpExport').onclick = exportPlan;
 $('#xpFiles').addEventListener('click', async e => { const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.xdl != null){ const f = XP_FILES[+b.dataset.xdl]; if(f) saveBlob(f[0], f[1]); return; }
   if(b.dataset.xshare){ try{ await navigator.share({ files: XP_FILES.map(f => new File([f[0]], f[1], { type: f[0].type })), title: 'Loading Plan' }); }catch(err){ if(err && err.name !== 'AbortError') $('#xpMsg').textContent = 'Could not share: '+err.message; } } });
