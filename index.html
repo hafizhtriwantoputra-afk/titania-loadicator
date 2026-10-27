@@ -123,6 +123,9 @@ h2:first-child{margin-top:4px}
 .g-sum b{color:var(--ink);font-weight:500}
 .chev{transition:transform .15s;color:var(--muted)}
 .group[open] .chev{transform:rotate(90deg)}
+#opList,#opOldList{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.op-row{display:flex;gap:6px;align-items:center}.op-row .btn[data-opdel]{flex:none;padding-left:12px;padding-right:12px}.op-row .btn[data-op]{flex:1;text-align:left;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.op-row .btn.on{border-color:var(--accent);font-weight:700}
+.op-act{display:flex;gap:6px;flex-wrap:wrap}.op-cy{font-size:12px;color:var(--muted);margin-top:4px}
 .g-tools{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 10px;align-items:center}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{background:transparent;border:0;padding:5px 10px;font-size:13px;cursor:pointer;color:var(--muted)}
@@ -336,14 +339,23 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
 
 <section class="tab on" id="t-info">
   <details class="group" open>
-    <summary><span class="g-title">Loading Plan</span><span class="g-sum" id="infoSum"></span><span class="chev">›</span></summary>
+    <summary><span class="g-title">Operation</span><span class="g-sum" id="opSum"></span><span class="chev">›</span></summary>
+    <div class="pl-body">
+      <div class="seg" id="opType"><button type="button" data-v="load">Loading</button><button type="button" data-v="disch">Discharging</button></div>
+      <div id="opList"></div>
+      <div class="op-act"><button type="button" class="btn sm" id="opNewD">+ Discharging</button><button type="button" class="btn sm" id="opNewL">+ Loading (new cycle)</button></div>
+      <details id="opOld" style="margin-top:10px"><summary class="op-cy">Previous cycles</summary><div id="opOldList"></div></details>
+    </div>
+  </details>
+  <details class="group" open>
+    <summary><span class="g-title" data-ml="planT">Loading Plan</span><span class="g-sum" id="infoSum"></span><span class="chev">›</span></summary>
     <div class="pl-body">
       <div class="pl-grid">
         <div class="field"><label for="inDate">Date</label><input class="t" type="date" id="inDate" data-ik="date"></div>
         <div class="field"><label for="inPort">Port</label><input class="t" id="inPort" data-ik="port"></div>
-        <div class="field"><label for="inTerm">Terminal</label><input class="t" id="inTerm" data-ik="terminal"></div>
+        <div class="field"><label for="inTerm" data-ml="term">Terminal</label><input class="t" id="inTerm" data-ik="terminal"></div>
         <div class="field"><label for="inGrade">Cargo grade</label><input class="t" id="inGrade" data-ik="grade" placeholder="LSFO"></div>
-        <div class="field"><label for="inMT">Loading quantity MT (air)</label><input class="n" id="inMT" data-ik="mt" inputmode="decimal"></div>
+        <div class="field"><label for="inMT" data-ml="mt">Loading quantity MT (air)</label><input class="n" id="inMT" data-ik="mt" inputmode="decimal"></div>
         <div class="field"><label for="inRho">Density @15°C</label><input class="n" id="inRho" data-ik="rho" inputmode="decimal"></div>
         <div class="field"><label for="inTemp">Temperature °C</label><input class="n" id="inTemp" data-ik="temp" inputmode="decimal"></div>
         <div class="field"><label for="inVoy">Voyage</label><input class="t" id="inVoy" data-ik="voy"></div>
@@ -353,11 +365,11 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
     </div>
   </details>
   <details class="group" open>
-    <summary><span class="g-title">ROB</span><span class="g-sum" id="robSum"></span><span class="chev">›</span></summary>
+    <summary><span class="g-title" data-ml="robT">ROB</span><span class="g-sum" id="robSum"></span><span class="chev">›</span></summary>
     <div class="pl-body">
       <div class="pl-grid">
-        <div class="field"><label for="inRobRho">ROB density @15°C</label><input class="n" id="inRobRho" data-ik="robRho" inputmode="decimal"></div>
-        <div class="field"><label for="inRobTemp">ROB temperature °C</label><input class="n" id="inRobTemp" data-ik="robTemp" inputmode="decimal"></div>
+        <div class="field"><label for="inRobRho" data-ml="robRho">ROB density @15°C</label><input class="n" id="inRobRho" data-ik="robRho" inputmode="decimal"></div>
+        <div class="field"><label for="inRobTemp" data-ml="robTemp">ROB temperature °C</label><input class="n" id="inRobTemp" data-ik="robTemp" inputmode="decimal"></div>
       </div>
       <div class="pl-grid" id="robCalc" style="margin-top:10px"></div>    </div>
   </details>
@@ -401,7 +413,7 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
     <div class="row" style="margin-bottom:12px"><button class="btn sm danger" type="button" id="rbClear">Clear ROB</button></div>
 
     <details class="group" open>
-      <summary><span class="g-title">Cargo ROB</span><span class="g-sum" id="plRobSum"></span><span class="chev">›</span></summary>
+      <summary><span class="g-title" data-ml="robCargo">Cargo ROB</span><span class="g-sum" id="plRobSum"></span><span class="chev">›</span></summary>
       <div class="pl-body">
         <div class="g-tools" style="padding:10px 0 4px"><span class="lbl">Entered as</span><div class="seg" id="plRobMode"><button type="button" data-v="snd">Sounding</button><button type="button" data-v="ull">Ullage</button><button type="button" data-v="vol">TOV m³</button></div></div>
         <div class="tbl-wrap"><table class="pl-tbl"><thead><tr><th>Tank</th><th id="plRobValH" class="robValH">Snd</th><th>Corr</th><th>TOV m³</th><th>MT air</th></tr></thead><tbody id="plRobBody"></tbody></table></div>
@@ -559,18 +571,19 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
 <div class="modal" id="tpModal" hidden><div class="box" role="dialog" aria-labelledby="tpTitle">
   <h3 id="tpTitle">Template</h3>
   <div class="tp-list">
-    <button class="btn tp-it" id="xpTplBtn" type="button"><b>Loading Plan (Excel)</b></button>
+    <button class="btn tp-it" id="xpTplBtn" type="button"><b>Loading Plan (Excel)</b><small id="xpTplS"></small></button>
+    <button class="btn tp-it" id="xpTplDBtn" type="button"><b>Discharging Plan (Excel)</b><small id="xpTplDS"></small></button>
     <button class="btn tp-it" id="isgTplBtn" type="button"><b>Ship Shore Checklist</b></button>
     <button class="btn tp-it" id="preTplBtn" type="button"><b>Pre-Arrival Checklist</b></button>
   </div>
   <div class="row" style="justify-content:flex-end"><button class="btn" id="tpClose" type="button">Close</button></div>
 </div></div>
 <div class="modal" id="xpModal" hidden><div class="box" role="dialog" aria-labelledby="xpTitle">
-  <h3 id="xpTitle">Export Loading Plan</h3>
+  <h3 id="xpTitle" data-ml="xpTitle">Export Loading Plan</h3>
   <p class="sub" style="margin:0 0 6px">Choose the files to create.</p>
   <div class="checks-opt" id="xpOpts" style="margin-bottom:12px">
-    <label><input type="checkbox" data-xo="lp" checked> Loading Plan (PDF)</label>
-    <label><input type="checkbox" data-xo="xl" checked> Loading Plan (Excel) <small data-xn="xl"></small></label>
+    <label><input type="checkbox" data-xo="lp" checked> <span data-ml="xpPdf">Loading Plan (PDF)</span></label>
+    <label><input type="checkbox" data-xo="xl" checked> <span data-ml="xpXl">Loading Plan (Excel)</span> <small data-xn="xl"></small></label>
     <label><input type="checkbox" data-xo="hr" checked> Hourly Record <small data-xn="hr"></small></label>
     <label><input type="checkbox" data-xo="isg" checked> Ship Shore C/L <small data-xn="isg"></small></label>
     <label><input type="checkbox" data-xo="pre" checked> Pre-Arrival C/L <small data-xn="pre"></small></label>
@@ -870,6 +883,53 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.LC = api;
 })(this);
 
+</script>
+<script>
+// PLAN-CORE start: pure planner helpers (no DOM, no S, no LC); tested by tests/plan.test.mjs
+// state v2 kept one loading plan in S.plan; v3 keeps a cycle of operations in S.ops
+function migrateV3(st){
+  if(!st || st.v!==2) return st;
+  st.ops = [{ ...(st.plan||{}), type:'load', cy:1, id:'op1' }]; st.opCur = 0; delete st.plan; st.v = 3;
+  return st;
+}
+// a condition opened from Saved, an import, a test condition or Clear all replaces the tanks, never the planner cycle cur.ops
+function keepOps(st, cur){
+  const o = migrateV3(st) || st; delete o.plan;
+  return { ...o, ops:cur.ops, opCur:cur.opCur };
+}
+// loading fills up to Initial + nomination; discharging empties to Initial - nomination (no nomination = discharge all)
+function planTarget(type, initTov, nomTov){
+  const nom = +nomTov || 0;
+  if(type==='disch') return nom>0 ? Math.max(0, initTov-nom) : 0;
+  return initTov + nom;
+}
+// rows: [{ name, first, last, minPct, lastPct }] in m3 / %, Initial vs Final
+function ballastText(type, rows){
+  if(type==='disch'){ const up = rows.filter(r => r.last > r.first+0.05).map(r => 'WBT '+r.name+' ('+Math.round(r.lastPct)+'%)');
+    return up.length ? 'BALLASTING '+up.join(', ') : 'NIL'; }
+  const down = rows.filter(r => r.last < r.first-0.05).map(r => 'WBT '+r.name+' ('+r.minPct+'%)');
+  return down.length ? 'DEBALLASTING '+down.join(', ') : 'NO DEBALLASTING';
+}
+// new discharging operation whose Initial is the previous operation's Final; fin.snd is in display units
+function opFromFinal(base, prev, fin, id){
+  const op = JSON.parse(JSON.stringify(base)), v = x => x==null ? '' : x;
+  Object.assign(op, { type:'disch', cy:prev.cy, id, grade:prev.grade, port:prev.port, view:'rob' });
+  op.rob.mode = 'snd'; op.rob.t = {};
+  for(const k in fin.snd) if(fin.snd[k] > 0) op.rob.t[k] = { val: fin.snd[k] };
+  op.rob.tk = { ...fin.bal }; op.rob.rho = v(fin.rho); op.rob.temp = v(fin.temp);
+  op.parcels[0] = { ...op.parcels[0], rho: v(fin.rho), temp: v(fin.temp), mt:'' };
+  return op;
+}
+// cells of the user's Excel templates that differ between loading and discharging (sig: picture anchor rows, 0-based [from, to, name row])
+const XL_MAP = {
+  load:  { sheet:'Sheet1', title:'Loading Plan', w1:['E102','E103','E104','E105'], w2:['E106','E107','E108','E109'], compact:false, standby:null,
+           navtex:'B112', inspect:'B134', agree:'B139', prep:{ row:181 }, ack:{ row:187 }, abs:{ row:194 }, pages:[38,97,149,201],
+           sig:{ o:[176,181,180], ack:[182,187,186], ab:[189,190,193], abCols:{ 0:'ab0', 3:'ab1', 6:'ab2', 9:'ab3' } } },
+  disch: { sheet:'PLAN', title:'Discharging Plan', w1:['E102','E103','E104'], w2:['E105','E106','E107'], compact:true, standby:'J102',
+           navtex:'B110', inspect:'B133', agree:'B138', prep:{ row:187 }, ack:{ row:193 }, abs:{ row:197 }, pages:[38,97,149,202],
+           sig:{ o:[182,185,186], ack:[186,189,192], ab:[193,194,196], abCols:{ 0:'ab0', 2:'ab1', 6:'ab2', 9:'ab3' } } }
+};
+// PLAN-CORE end
 </script>
 <script>
 /* Minimal multi-page PDF writer (no libraries, works offline). Helvetica / Helvetica-Bold, WinAnsi. */
@@ -1415,10 +1475,10 @@ const LU=()=>S.lenUnit||'cm', isMM=()=>LU()==='mm', toCm=v=>isMM()?v/10:v, fromC
 const ccOn=()=>!!(S.cc&&S.cc.on); const refCm = t => S.ull[t.id]||(t.ref?t.ref/10:maxCm(t));
 
 function blankState(){
-  return {v:2, name:'', rhoSW:1.025, zone:'S', inAir:false, lenUnit:'mm', unit:{}, cargo:{}, tanks:{}, ull:{}, trimMode:'calc', obsF:'', obsA:'',
+  return {v:3, ops:[{ ...planDefault(), cy:1, id:'op1' }], opCur:0, name:'', rhoSW:1.025, zone:'S', inAir:false, lenUnit:'mm', unit:{}, cargo:{}, tanks:{}, ull:{}, trimMode:'calc', obsF:'', obsA:'',
     items: SHIP.constants.map(c=>({...c})), ref:null};
 }
-function toMM(st){ if(st.lenUnit==='mm'||st.luSet) return st; for(const id in st.cargo||{}){ const c=st.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*10).toFixed(0); } const rb=st.plan&&st.plan.rob; if(rb&&rb.mode&&rb.mode!=='vol'&&rb.t) for(const id in rb.t){ const c=rb.t[id]; if(c&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*10).toFixed(0); } st.lenUnit='mm'; return st; }
+function toMM(st){ if(st.lenUnit==='mm'||st.luSet) return st; for(const id in st.cargo||{}){ const c=st.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*10).toFixed(0); } [st.plan, ...(st.ops||[])].forEach(op=>{ const rb=op&&op.rob; if(rb&&rb.mode&&rb.mode!=='vol'&&rb.t) for(const id in rb.t){ const c=rb.t[id]; if(c&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*10).toFixed(0); } }); st.lenUnit='mm'; return st; }
 function setLU(nu){ if(nu===LU()) return; const f=nu==='mm'?10:0.1; for(const id in S.cargo){ const c=S.cargo[id]; if(c.mode!=='vol'&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*f).toFixed(nu==='mm'?0:1); } const rb=PLs().rob; if(rb.mode!=='vol') for(const id in rb.t){ const c=rb.t[id]; if(c&&c.val!==''&&c.val!=null&&isFinite(parseFloat(c.val))) c.val=+(parseFloat(c.val)*f).toFixed(nu==='mm'?0:1); } S.lenUnit=nu; S.luSet=true; renderUll(); update(); renderPlan(); }
 document.addEventListener('change',e=>{ if(e.target.classList&&e.target.classList.contains('lu-sel')) setLU(e.target.value); });
 const luSel=pre=>`<select class="lu-sel" aria-label="Unit"><option value="mm" ${isMM()?'selected':''}>${pre}mm</option><option value="cm" ${!isMM()?'selected':''}>${pre}cm</option></select>`;
@@ -1429,7 +1489,8 @@ function exampleState(i){
   st.items[0].W = e.cons; st.ref = e.ref; if(/Tropic/.test(e.name)) st.zone='T'; return st;
 }
 let S = store.get('lc_current');
-if(!S || S.v!==2){ S = exampleState(0); } else { toMM(S); }
+if(S && S.v===2) migrateV3(S);
+if(!S || S.v!==3){ S = exampleState(0); } else { toMM(S); }
 
 // ---------- cargo math ----------
 let TRIM_USED = 0;
@@ -1853,7 +1914,7 @@ $('#pGo').onclick=async()=>{
 
 // ---------- save / load ----------
 function toast(m){const t=$('#toast'); t.textContent=m; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2200);}
-function loadState(st){ S={...blankState(),...JSON.parse(JSON.stringify(st))}; toMM(S); $('#condName').value=S.name||''; $('#rhoSW').value=S.rhoSW; $('#inAir').checked=!!S.inAir; $('#zone').value=S.zone||'S'; $('#obsF').value=S.obsF||''; $('#obsA').value=S.obsA||''; renderTrimMode(); renderTcRound(); renderDraftRef(); renderGroups(); renderConst(); renderUll(); update(); }
+function loadState(st){ S={...blankState(),...migrateV3(JSON.parse(JSON.stringify(st)))}; toMM(S); $('#condName').value=S.name||''; $('#rhoSW').value=S.rhoSW; $('#inAir').checked=!!S.inAir; $('#zone').value=S.zone||'S'; $('#obsF').value=S.obsF||''; $('#obsA').value=S.obsA||''; renderTrimMode(); renderTcRound(); renderDraftRef(); renderGroups(); renderConst(); renderUll(); update(); }
 function savedList(){ return store.get('lc_saved')||[]; }
 function renderSaved(){
   const L=savedList();
@@ -1861,16 +1922,16 @@ function renderSaved(){
 }
 $('#savedList').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return; const L=savedList();
-  if(b.dataset.load!=null){ loadState(L[+b.dataset.load].state); toast('Condition opened'); go('t-tanks'); }
+  if(b.dataset.load!=null){ loadState(keepOps(JSON.parse(JSON.stringify(L[+b.dataset.load].state)), S)); toast('Condition opened'); go('t-tanks'); }
   if(b.dataset.rm!=null){ if(b.dataset.sure){ L.splice(+b.dataset.rm,1); store.set('lc_saved',L); renderSaved(); toast('Deleted'); } else { b.dataset.sure=1; b.textContent='Confirm delete'; } }
 });
 $('#btnSave').onclick=()=>{ S.name=$('#condName').value||('Condition '+new Date().toLocaleDateString('en-GB')); $('#condName').value=S.name; const st=JSON.parse(JSON.stringify(S)); st.ref=null; const L=savedList(); const i=L.findIndex(x=>x.state.name===st.name); const rec={at:Date.now(),state:st,W:R.W,GM:R.GMf}; if(i>=0)L[i]=rec; else L.unshift(rec); if(store.set('lc_saved',L)){renderSaved(); toast('Saved: '+st.name);} else toast('This browser does not allow saving'); };
 $('#exList').innerHTML = EXAMPLES.map((e,i)=>`<div class="item"><div class="meta"><b>${e.name}</b><span>Δ ${fmt(e.ref.W,1)} · Tm ${fmt(e.ref.Tm,3)} · GM ${fmt(e.ref.GMf,3)}</span></div><button class="btn sm" type="button" data-ex="${i}">Load</button></div>`).join('');
-$('#exList').addEventListener('click',e=>{const b=e.target.closest('[data-ex]'); if(b){ loadState(exampleState(+b.dataset.ex)); toast('Test condition loaded'); go('t-res'); }});
-$('#btnClear').onclick=function(){ if(!this.dataset.sure){this.dataset.sure=1;this.textContent='Confirm clear';setTimeout(()=>{delete this.dataset.sure;this.textContent='Clear all'},3000);return;} delete this.dataset.sure; this.textContent='Clear all'; loadState(blankState()); toast('All tanks cleared'); };
-const exportJSON=()=>JSON.stringify({app:'titania-loadicator',v:2,state:{...S,name:$('#condName').value}},null,1);
+$('#exList').addEventListener('click',e=>{const b=e.target.closest('[data-ex]'); if(b){ loadState(keepOps(exampleState(+b.dataset.ex), S)); toast('Test condition loaded'); go('t-res'); }});
+$('#btnClear').onclick=function(){ if(!this.dataset.sure){this.dataset.sure=1;this.textContent='Confirm clear';setTimeout(()=>{delete this.dataset.sure;this.textContent='Clear all'},3000);return;} delete this.dataset.sure; this.textContent='Clear all'; loadState(keepOps(blankState(), S)); toast('All tanks cleared'); };
+const exportJSON=()=>JSON.stringify({app:'titania-loadicator',v:3,state:{...S,name:$('#condName').value}},null,1);
 $('#btnCopy').onclick=()=>{ const txt=exportJSON(); $('#jsonBox').value=txt; const fb=()=>{ $('#jsonBox').select(); toast('Copy the text from the box below'); }; if(navigator.clipboard) navigator.clipboard.writeText(txt).then(()=>toast('JSON copied'),fb); else fb(); };
-function importText(txt){ try{ const o=JSON.parse(txt); const st=o.state||o; if(!st.cargo||!st.tanks) throw 0; st.v=2; loadState(st); toast('Condition imported'); go('t-tanks'); }catch(e){ toast('Invalid JSON. Use a file exported from this app.'); } }
+function importText(txt){ try{ const o=JSON.parse(txt); const st=o.state||o; if(!st.cargo||!st.tanks) throw 0; if(st.v!==3) st.v=2; loadState(keepOps(st, S)); toast('Condition imported'); go('t-tanks'); }catch(e){ toast('Invalid JSON. Use a file exported from this app.'); } }
 $('#btnImport').onclick=()=>importText($('#jsonBox').value);
 $('#fileIn').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>importText(r.result); r.readAsText(f); e.target.value=''; };
 
@@ -1903,10 +1964,11 @@ const PL_OTHER = ['WATER BALLAST'];
 const PL_BAL = SHIP.tanks.filter(t => t.group === 'WATER BALLAST');
 const shortN = t => { const id=t.id, m=id.match(/^COTK(\d)([PS])$/); if(m) return m[1]+' '+m[2]; let n=id.match(/^WBTK(\d)([PS])$/); if(n) return n[1]+'W '+n[2];
   if(/^SLOPTK/.test(id)) return 'Slop '+id.slice(-1); if(/^RESIDTK/.test(id)) return 'Resid '+id.slice(-1); if(/^FWDWBTK/.test(id)) return 'FWD W '+id.slice(-1); if(id==='FPTKC') return 'FPT'; return t.name; };
-function planDefault(){ return { port:'', terminal:'', grade:'VLSFO', voy:'', parcels:[{ name:'Shore tank 1', mt:'', rho:'', temp:'', prod:'auto' }],
+function planDefault(){ return { type:'load', port:'', terminal:'', grade:'VLSFO', voy:'', parcels:[{ name:'Shore tank 1', mt:'', rho:'', temp:'', prod:'auto' }],
   rob:{ rho:'', temp:'', obsA:'', obsF:'', mode:'snd', t:{}, tk:{}, u:{} }, view:'rob', load:{ c:{}, b:{}, bu:'pct' }, date:'', seq:[0,1,2,3].map(()=>({ c:{}, b:{} })) }; }
-function PLs(){ if(!S.plan || !S.plan.load) S.plan = { ...planDefault(), ...(S.plan||{}), load: planDefault().load };
-  const p=S.plan, d=planDefault(); for(const k in d) if(p[k]==null) p[k]=d[k]; for(const k in d.rob) if(p.rob[k]==null) p.rob[k]=d.rob[k]; for(const k in d.load) if(p.load[k]==null) p.load[k]=d.load[k];
+function PLs(){ if(!Array.isArray(S.ops) || !S.ops.length){ S.ops=[{ ...planDefault(), cy:1, id:'op1' }]; S.opCur=0; }
+  if(!(S.opCur>=0 && S.opCur<S.ops.length)) S.opCur=S.ops.length-1;
+  const p=S.ops[S.opCur], d=planDefault(); if(!p.load) p.load=d.load; if(!p.cy) p.cy=1; for(const k in d) if(p[k]==null) p[k]=d[k]; for(const k in d.rob) if(p.rob[k]==null) p.rob[k]=d.rob[k]; for(const k in d.load) if(p.load[k]==null) p.load[k]=d.load[k];
   if(!/^(rob|s[0-3])$/.test(p.view)) p.view='rob';
   if(!Array.isArray(p.seq) || p.seq.length!==4) p.seq=d.seq; p.seq.forEach(q=>{ q.c=q.c||{}; q.b=q.b||{}; });
   return p; }
@@ -1917,6 +1979,14 @@ const tRho = id => { const c=S.tanks[id]; return +((c&&c.rho)||byId[id].rho||1);
 const sdgOfVol = (t, v) => { if(!(v>0)) return 0; LC.prep(t); return LC.interp(t._v, t._h, v)*100; }; // non-cargo, cm, even keel
 const volOfSdg = (t, cm) => cm>0 ? Math.min(t.cap, LC.heightToVol(t, cm/100)) : 0;
 
+// labels that change with the operation type
+const MODE_LBL = {
+  load:  { planT:'Loading Plan', term:'Terminal', mt:'Loading quantity MT (air)', robT:'ROB', robRho:'ROB density @15°C', robTemp:'ROB temperature °C', robCargo:'Cargo ROB',
+           qty:'Loading quantity', head:'LOADING PLAN', xpTitle:'Export Loading Plan', xpPdf:'Loading Plan (PDF)', xpXl:'Loading Plan (Excel)', target:'Target (ROB + nomination)', initV:'ROB cargo m³', cond:'Plan' },
+  disch: { planT:'Discharging Plan', term:'Receiving vessel', mt:'Discharge quantity MT (air, blank = all)', robT:'Cargo on board', robRho:'Cargo density @15°C', robTemp:'Cargo temperature °C', robCargo:'Cargo on board',
+           qty:'Discharge quantity', head:'DISCHARGING PLAN', xpTitle:'Export Discharging Plan', xpPdf:'Discharging Plan (PDF)', xpXl:'Discharging Plan (Excel)', target:'Target (Initial − nomination)', initV:'Cargo on board m³', cond:'Disch plan' } };
+const ML = k => MODE_LBL[PLs().type==='disch' ? 'disch' : 'load'][k];
+function renderModeLabels(){ document.querySelectorAll('[data-ml]').forEach(el=>{ el.textContent = ML(el.dataset.ml); }); }
 // --- nomination ---
 function planNom(){
   const P = PLs(); let mt=0, gsv=0, tov=0, rhoG=0, tTov=0;
@@ -1963,8 +2033,8 @@ function planSeq(){
   for(let k=0;k<4;k++){ const Q=P.seq[k], cv={}, bv={};
     CARGO_T.forEach(t=>{ const cm=num(Q.c[t.id]); cv[t.id] = cm!=null ? LC.sndToVol(t, Math.min(Math.max(cm,0),maxCm(t))*10) : pc[t.id]; });
     PL_BAL.forEach(t=>{ const x=num(Q.b[t.id]); bv[t.id] = x==null ? pb[t.id] : t.cap*Math.min(100,Math.max(0,x))/100; });
-    const total=CARGO_T.reduce((a,t)=>a+cv[t.id],0), target=rob.tov+NOM.tov, R=LC.compute(SHIP, condFor(cv, bv));
-    out.push({ cv, bv, pc, pb, total, target, remain: total-target, loaded: total-rob.tov, R }); pc=cv; pb=bv; }
+    const total=CARGO_T.reduce((a,t)=>a+cv[t.id],0), target=planTarget(P.type, rob.tov, NOM.tov), R=LC.compute(SHIP, condFor(cv, bv));
+    out.push({ cv, bv, pc, pb, total, target, remain: total-target, loaded: total-rob.tov, discharged: rob.tov-total, R }); pc=cv; pb=bv; }
   return out;
 }
 
@@ -1983,7 +2053,7 @@ function grpUnits(g){ return g==='WATER BALLAST' ? ['m3','pct','sdg'] : ['m3','p
 const uLbl = u => u==='m3'?'m³':u==='pct'?'%':'SDG cm';
 function robInVal(t){ const P=PLs(), u=P.rob.u[t.group]||'m3', v=+P.rob.tk[t.id]||0; if(!(v>0)) return ''; return u==='m3'? +v.toFixed(3) : u==='pct' ? +(v/t.cap*100).toFixed(2) : +sdgOfVol(t,v).toFixed(1); }
 function renderPlan(){
-  const P=PLs();
+  const P=PLs(); renderModeLabels();
   document.querySelectorAll('#plView button').forEach(b=>b.classList.toggle('on',b.dataset.v===P.view));
   const isRob = P.view==='rob'; $('#plRobView').hidden = !isRob; $('#plSeqView').hidden = isRob;
   // ROB cargo
@@ -2033,7 +2103,7 @@ function planUpdate(){
       const inp=document.querySelector(`[data-sc="${t.id}"]`); if(inp) inp.placeholder = pv>0 ? String(+fromCm(LC.volToSnd(t,pv)/10).toFixed(isMM()?0:1)) : ''; });
     const pTot=CARGO_T.reduce((a,t)=>a+r.pc[t.id],0);
     $('#plDistFoot').innerHTML = `<tr class="tot"><td>Total</td><td>${fmt(pTot,3)}</td><td></td><td>${fmt(r.total,3)}</td><td></td><td>${fmt(r.total-pTot,3)}</td></tr>
-      <tr><td colspan="3">Target (ROB + nomination)</td><td>${fmt(r.target,3)}</td><td></td><td></td></tr>
+      <tr><td colspan="3">${ML('target')}</td><td>${fmt(r.target,3)}</td><td></td><td></td></tr>
       <tr class="tot"><td colspan="3">Remaining</td><td class="${r.remain<-0.0005?'bad':'ok'}">${(r.remain>=0?'+':'')+fmt(r.remain,3)}</td><td></td><td></td></tr>`;
     EXTRA_G.forEach(([k,,ts])=>{ const e=document.getElementById('exq-'+k); if(e){ const v=ts.reduce((a,t)=>a+r.cv[t.id],0); e.innerHTML=v>0?`<b>${fmt(v,3)}</b> m³`:''; } });
     $('#plDistSum').innerHTML = `<b class="${r.remain<-0.0005?'neg':'pos'}">${(r.remain>=0?'+':'')+fmt(r.remain,3)}</b> m³`;
@@ -2064,9 +2134,9 @@ function planUpdate(){
     row('COT',(R,i)=>(i&&chg[i-1].cot)||'-',()=>'lst') + row('WBT',(R,i)=>(i&&chg[i-1].wbt)||'-',()=>'lst');
   $('#plSumSum').innerHTML = `<b>${fmt(cols[4].str.maxSFp,0)}/${fmt(cols[4].str.maxBMp,0)}</b> %`;
   // dashboard
-  if(P.view==='rob'){ $('#pdName').textContent='LOADING PLAN · INITIAL'; planDash(rob.R, { v:fmt(rob.tov,3), l:'ROB cargo m³' }); }
-  else { const k=+P.view.slice(1), r=sq[k]; $('#pdName').textContent='LOADING PLAN · '+SEQ_NAMES[k+1].toUpperCase();
-    planDash(r.R, nom.tov>0 ? { v:(r.remain>=0?'+':'')+fmt(r.remain,3), l:'Remaining m³', c: r.remain<-0.0005?'neg':'pos' } : { v:'–', l:'Remaining m³ (no nomination)' }); }
+  if(P.view==='rob'){ $('#pdName').textContent=ML('head')+' · INITIAL'; planDash(rob.R, { v:fmt(rob.tov,3), l:ML('initV') }); }
+  else { const k=+P.view.slice(1), r=sq[k]; $('#pdName').textContent=ML('head')+' · '+SEQ_NAMES[k+1].toUpperCase();
+    planDash(r.R, nom.tov>0 || P.type==='disch' ? { v:(r.remain>=0?'+':'')+fmt(r.remain,3), l:'Remaining m³', c: r.remain<-0.0005?'neg':'pos' } : { v:'–', l:'Remaining m³ (no nomination)' }); }
 }
 
 // --- events ---
@@ -2098,10 +2168,10 @@ $('#t-plan').addEventListener('click', e=>{ const b=e.target.closest('button'); 
     if(b.id==='rbClear'){ P.rob=planDefault().rob; } else { P.seq[+P.view.slice(1)]={ c:{}, b:{} }; } store.set('lc_current',S); renderPlan(); toast('Cleared'); return; }
   if(b.id==='plApply'){ const k=+P.view.slice(1), ld=PR&&PR.seq[k]; if(!ld) return; const nom=NOM, rob=ROB;
     CARGO_T.forEach(t=>{ const v=ld.cv[t.id]; S.cargo[t.id]={ mode:'vol', val: v>0?+v.toFixed(3):'', temp:'', rho:'', prod:'auto' }; });
-    const gT=rob.gsv+nom.gsv, rhoB = gT>0 ? (rob.gsv*rob.rho+nom.rhoG)/gT : rob.rho, tvT=rob.tov+nom.tov, tB = tvT>0 ? (rob.tov*rob.temp+nom.tTov)/tvT : rob.temp;
+    const dis=P.type==='disch', gT=rob.gsv+nom.gsv, rhoB = !dis && gT>0 ? (rob.gsv*rob.rho+nom.rhoG)/gT : rob.rho, tvT=rob.tov+nom.tov, tB = !dis && tvT>0 ? (rob.tov*rob.temp+nom.tTov)/tvT : rob.temp; // discharging: all cargo is the cargo on board
     S.cc={ on:true, rho:+rhoB.toFixed(4), temp:+tB.toFixed(1), prod:'auto' };
     SHIP.tanks.forEach(t=>{ if(t.group!=='WATER BALLAST') return; S.tanks[t.id]={ ...(S.tanks[t.id]||{rho:t.rho}), vol:+(+ld.bv[t.id]).toFixed(3) }; });
-    S.name=['Plan',SEQ_NAMES[k+1],P.port,P.grade,nom.mt>0?fmt(nom.mt,0)+' MT':''].filter(Boolean).join(' · '); $('#condName').value=S.name; S.ref=null;
+    S.name=[ML('cond'),SEQ_NAMES[k+1],P.port,P.grade,nom.mt>0?fmt(nom.mt,0)+' MT':''].filter(Boolean).join(' · '); $('#condName').value=S.name; S.ref=null;
     renderGroups(); update(); store.set('lc_current',S); go('t-res'); toast('Planned condition opened in Results'); return; }
 });
 
@@ -2182,10 +2252,10 @@ function renderCrew(){
 }
 function infoCalcs(){
   const P=PLs(), n=planNom(), r=n.rows[0], kv=a=>a.map(x=>`<div class="field"><label>${x[0]}</label><input class="n" readonly tabindex="-1" value="${x[1]}" aria-label="${x[0]}"></div>`).join('');
-  $('#infoCalc').innerHTML = kv(r&&r.ok ? [['WCF',r.wcf.toFixed(4)],['VCF',r.vcf.toFixed(4)],['GSV',fmt(r.gsv,3)+' m³'],['TOV',fmt(r.tov,3)+' m³']] : [['Loading quantity','enter MT, density, temperature']]);
+  $('#infoCalc').innerHTML = kv(r&&r.ok ? [['WCF',r.wcf.toFixed(4)],['VCF',r.vcf.toFixed(4)],['GSV',fmt(r.gsv,3)+' m³'],['TOV',fmt(r.tov,3)+' m³']] : [[ML('qty'),'enter MT, density, temperature']]);
   $('#infoSum').innerHTML = n.mt>0 ? `<b>${fmt(n.mt,0)}</b> MT` : '';
   const pc=P.parcels[0]||{}, rho=num(P.rob.rho)||num(pc.rho), t=num(P.rob.temp)??num(pc.temp);
-  $('#robCalc').innerHTML = kv(rho>0 ? [['WCF',(rho-0.0011).toFixed(4)],['VCF',LC.vcf('auto',rho,t??15).toFixed(4)]] : [['ROB','enter density and temperature']]);
+  $('#robCalc').innerHTML = kv(rho>0 ? [['WCF',(rho-0.0011).toFixed(4)],['VCF',LC.vcf('auto',rho,t??15).toFixed(4)]] : [[ML('robT'),'enter density and temperature']]);
   $('#robSum').innerHTML = rho>0 ? `<b>${rho}</b> · ${t??15}°C` : '';
 }
 const STOW_OPT = ['1W','2W','3W','4W','5W','SLOP'];
@@ -2193,7 +2263,42 @@ function renderStow(){
   const sel = (PLs().stow || '').split(/[\s,]+/).filter(x => STOW_OPT.includes(x.toUpperCase())).map(x => x.toUpperCase());
   $('#stowBox').innerHTML = STOW_OPT.map(o => `<label class="chip${sel.includes(o)?' on':''}"><input type="checkbox" data-stow="${o}" ${sel.includes(o)?'checked':''}>${o}</label>`).join('');
 }
+// ---- operation cycle: Loading, Disch 1, Disch 2, ... then the next Loading starts a new cycle ----
+const opEsc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+function opLabel(op){
+  const n = op.type==='disch' ? S.ops.filter(o=>o.cy===op.cy && o.type==='disch').indexOf(op)+1 : 0, mt = op.parcels&&op.parcels[0]&&op.parcels[0].mt;
+  return [op.type==='disch' ? 'Disch '+n : 'Loading', op.terminal, mt ? mt+' MT' : ''].filter(Boolean).join(' · ');
+}
+function opFinal(op){ // Final stage of op as the next operation's Initial: observed soundings (display units), ballast m3, cargo density/temperature
+  const keep = S.opCur; S.opCur = S.ops.indexOf(op);
+  try{
+    const rob = planRob(), nom = NOM, fin = planSeq()[3], tr = fin.R.trim, snd = {};
+    CARGO_T.forEach(t=>{ const v = fin.cv[t.id]; if(!(v>0)) return; let obs = LC.volToSnd(t, v)/10;
+      if(S.trimMode!=='off' && t.tc){ const k = LC.trimCorr(t, obs, tr, tcStep()); if(k.corr!=null) obs -= k.corr; }
+      snd[t.id] = +fromCm(obs).toFixed(isMM()?0:1); });
+    const bal = {}; PL_BAL.forEach(t=>{ if(fin.bv[t.id]>0) bal[t.id] = +fin.bv[t.id].toFixed(3); });
+    let rho = rob.rho, temp = rob.temp;
+    if(op.type!=='disch'){ const gT = rob.gsv+nom.gsv, tvT = rob.tov+nom.tov; if(gT>0) rho = (rob.gsv*rob.rho+nom.rhoG)/gT; if(tvT>0) temp = (rob.tov*rob.temp+nom.tTov)/tvT; }
+    return { snd, bal, rho: rho!=null ? +rho.toFixed(4) : null, temp: temp!=null ? +temp.toFixed(1) : null };
+  } finally { S.opCur = keep; planRob(); }
+}
+function opSaved(){ store.set('lc_current',S); renderInfo(); renderPlan(); }
+function opOpen(i){ S.opCur = i; opSaved(); }
+function opNewDisch(){ const prev = PLs(); S.ops.push(opFromFinal(planDefault(), prev, opFinal(prev), newId())); S.opCur = S.ops.length-1; opSaved(); toast('Discharging started from the previous Final'); }
+function opNewLoad(){ const cy = Math.max(...S.ops.map(o=>o.cy||1))+1; S.ops.push({ ...planDefault(), cy, id:newId() }); S.opCur = S.ops.length-1; opSaved(); toast('New cycle: loading'); }
+function opDelete(i){ if(S.ops.length<2) return; S.ops.splice(i,1); if(S.opCur>=i) S.opCur = Math.max(0, S.opCur-1); opSaved(); toast('Operation deleted'); }
+function renderOps(){
+  const P = PLs(), cy = P.cy, row = (op) => { const i = S.ops.indexOf(op);
+    return `<div class="op-row"><button type="button" class="btn sm${i===S.opCur?' on':''}" data-op="${i}">${opEsc(opLabel(op))}</button>${S.ops.length>1?`<button type="button" class="btn sm" data-opdel="${i}" aria-label="Delete ${opEsc(opLabel(op))}">×</button>`:''}</div>`; };
+  document.querySelectorAll('#opType button').forEach(b=>b.classList.toggle('on', b.dataset.v===P.type));
+  $('#opSum').textContent = opLabel(P);
+  $('#opList').innerHTML = S.ops.filter(o=>o.cy===cy).map(row).join('');
+  const old = [...new Set(S.ops.filter(o=>o.cy!==cy).map(o=>o.cy))].sort((a,b)=>b-a);
+  $('#opOld').hidden = !old.length;
+  $('#opOldList').innerHTML = old.map(c=>`<div class="op-cy">Cycle ${c}</div>`+S.ops.filter(o=>o.cy===c).map(row).join('')).join('');
+}
 function renderInfo(){
+  renderOps(); renderModeLabels();
   const P=PLs(); if(!P.date) P.date=new Date().toISOString().slice(0,10);
   document.querySelectorAll('[data-ik]').forEach(el=>{ el.value=infoGet(el.dataset.ik)??''; });
   $('#inRobRho').placeholder=P.parcels[0].rho||''; $('#inRobTemp').placeholder=P.parcels[0].temp||'';
@@ -2210,6 +2315,12 @@ $('#t-info').addEventListener('change', e=>{ const el=e.target;
   if(el.dataset.wo){ CREW.watch[el.dataset.wo].o=el.value; crewSave(); renderCrew(); return; }
   if(el.dataset.wc){ const [k,i]=el.dataset.wc.split(':'); CREW.watch[k].c[+i]=el.value; crewSave(); renderCrew(); } });
 $('#t-info').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.op!=null){ opOpen(+b.dataset.op); return; }
+  if(b.dataset.opdel!=null){ if(!b.dataset.sure){ b.dataset.sure=1; b.textContent='Delete?'; setTimeout(()=>{ delete b.dataset.sure; b.textContent='×'; },3000); return; } opDelete(+b.dataset.opdel); return; }
+  if(b.id==='opNewD'){ opNewDisch(); return; }
+  if(b.id==='opNewL'){ opNewLoad(); return; }
+  if(b.parentElement.id==='opType'){ const P=PLs(), t=b.dataset.v; if(t===P.type) return; const same=S.ops.filter(o=>o.cy===P.cy && o.type===t);
+    if(same.length) opOpen(S.ops.indexOf(same[same.length-1])); else if(t==='disch') opNewDisch(); else opNewLoad(); return; }
   if(b.id==='crewAdd'){ const name=$('#crewName').value.trim(); if(!name) return; CREW.list.push({ id:newId(), name, rank:$('#crewRank').value }); $('#crewName').value=''; crewSave(); renderCrew(); toast('Crew added'); return; }
   if(b.dataset.bdel){ delAsk = b.dataset.bdel; renderCrew(); return; }
   if(b.dataset.bdelno){ delAsk = null; renderCrew(); return; }
@@ -2232,13 +2343,17 @@ $('#sigFile').onchange = async e => { const f = e.target.files[0]; e.target.valu
 const sigSlotOf = (sheet, an) => {
   if (an.tc - an.fc >= 5) return null;
   if (sheet === 'HOURLY') return { slot: an.fc < 5 ? 'o1' : 'o2', row: an.fr < 50 ? 32 : 69 };
-  if (sheet === 'Sheet1') { if (an.fr >= 176 && an.fr <= 181) return { slot: an.fc < 5 ? 'o1' : 'o2', row: 180 }; if (an.fr >= 182 && an.fr <= 187) return { slot: an.fc < 4 ? 'ack0' : 'ack2', row: 186 }; if (an.fr >= 189 && an.fr <= 190) { const k = ({ 0: 'ab0', 3: 'ab1', 6: 'ab2', 9: 'ab3' })[an.fc]; return k ? { slot: k, row: 193 } : null; } }
+  const m = Object.values(XL_MAP).find(x => x.sheet === sheet);
+  if (m) { const g = m.sig, inR = r => an.fr >= r[0] && an.fr <= r[1];
+    if (inR(g.o)) return { slot: an.fc < 5 ? 'o1' : 'o2', row: g.o[2] };
+    if (inR(g.ack)) return { slot: an.fc < 4 ? 'ack0' : 'ack2', row: g.ack[2] };
+    if (inR(g.ab)) { const k = g.abCols[an.fc]; return k ? { slot: k, row: g.ab[2] } : null; } }
   return null;
 };
 function sigMaps(d){
   const w = d.w, hasB = w.ack.length && w.ack[0].rank === 'Bosun', ackSlots = hasB ? ['ack0','ack1','ack2'] : ['ack0','ack2'], put = (m, k, p) => { if (p && p.sig) m[k] = p.sig; };
   const s1 = {}, h = {}; put(s1,'o1',w.o1); put(s1,'o2',w.o2); w.ack.slice(0, ackSlots.length).forEach((p, i) => put(s1, ackSlots[i], p)); w.abs.slice(0, 4).forEach((p, i) => put(s1, 'ab' + i, p));
-  put(h,'o1',w.o1); put(h,'o2',w.o2); return { Sheet1: s1, HOURLY: h };
+  put(h,'o1',w.o1); put(h,'o2',w.o2); return { [XL_MAP[d.type==='disch' ? 'disch' : 'load'].sheet]: s1, HOURLY: h };
 }
 const sigPng = async url => { const b = await (await fetch(url)).blob(), bmp = await createImageBitmap(b); return { bytes: new Uint8Array(await b.arrayBuffer()), w: bmp.width, h: bmp.height }; };
 const dataBytes = u => Uint8Array.from(atob(u.split(',')[1]), c => c.charCodeAt(0));
@@ -2281,15 +2396,15 @@ function planData(){
     s.balTot = s.bal.reduce((a,b)=>a+b.vol,0);
   });
   const first = stages[0], last = stages[4];
-  const order = ['5W','4W','3W','2W','1W','FWD W','FPT'], deb = order.filter(n => { const i = BAL_PAIRS.findIndex(b=>b[0]===n); return last.bal[i].vol < first.bal[i].vol - 0.05; })
-    .map(n => { const ids = BAL_PAIRS.find(b=>b[0]===n)[1]; return 'WBT '+n+' ('+BAL_MIN(ids[0])+'%)'; });
+  const type = P.type==='disch' ? 'disch' : 'load', ballast = ballastText(type, ['5W','4W','3W','2W','1W','FWD W','FPT'].map(n => { const i = BAL_PAIRS.findIndex(b=>b[0]===n), ids = BAL_PAIRS[i][1], cap = ids.reduce((a,id)=>a+byId[id].cap,0);
+    return { name:n, first:first.bal[i].vol, last:last.bal[i].vol, minPct:BAL_MIN(ids[0]), lastPct: cap>0 ? last.bal[i].vol/cap*100 : 0 }; }));
   const rho = num(pc0.rho), temp = num(pc0.temp), mt = num(pc0.mt);
   const r0 = nom.rows[0] && nom.rows[0].ok ? nom.rows[0] : null;
   const port = (P.port||'').trim(), portTitle = port.toLowerCase().replace(/(^|\s)\w/g, c=>c.toUpperCase());
   return { P, stages, names, rob, nom, w, port, portTitle, terminal:P.terminal||'', date:P.date||'', grade:P.grade||'', stow:P.stow||'', mt, rho, temp,
-    vcf:r0?r0.vcf:null, wcf:r0?r0.wcf:null, kl:r0?r0.tov:null, deb, voy:P.voy||'',
-    inspect: 'Tank inspection by cargo surveyor COT '+(P.stow||''),
-    agree: 'Agreed Loading Quantity '+(mt!=null?mt:'')+' MT, density '+(rho!=null?rho:'')+' and temperature '+(temp!=null?temp:'')+'°C' };
+    vcf:r0?r0.vcf:null, wcf:r0?r0.wcf:null, kl:r0?r0.tov:null, type, ballast, voy:P.voy||'',
+    inspect: type==='disch' ? 'NO BARGE TANK INSPECTION' : 'Tank inspection by cargo surveyor COT '+(P.stow||''),
+    agree: 'Agreed '+(type==='disch'?'Discharging':'Loading')+' Quantity '+(mt!=null?mt:'')+' MT, density '+(rho!=null?rho:'')+' and temperature '+(temp!=null?temp:'')+'°C' };
 }
 function xlEdits(d){
   const s1 = [], s3 = [], at = (a,v)=>a.push(v), E = (ref,v)=>s1.push([ref,v]);
@@ -2301,18 +2416,20 @@ function xlEdits(d){
     E(SEQ_COLS[i]+'88', +s.R.Tf.toFixed(2)); E(VOL_COLS[i]+'88', +s.R.Ta.toFixed(2));
     E(SEQ_COLS[i]+'90', +(s.R.str.maxSFp/100).toFixed(2)); E(VOL_COLS[i]+'90', +(s.R.str.maxBMp/100).toFixed(2));
   });
-  [38, 97, 149, 201].forEach((r, i) => E('A'+r, 'Page '+(i+1)+' of 4'));
-  E('A94', d.deb.length ? 'DEBALLASTING '+d.deb.join(', ') : 'NO DEBALLASTING');
-  if(d.port) E('B112', 'Refer to Navtex warnings and latest edition of the '+d.portTitle+' Tide Tables');
-  E('B134', d.inspect); E('B139', d.agree);
+  const m = XL_MAP[d.type==='disch' ? 'disch' : 'load'];
+  m.pages.forEach((r, i) => E('A'+r, 'Page '+(i+1)+' of 4'));
+  E('A94', d.ballast);
+  if(d.port) E(m.navtex, 'Refer to Navtex warnings and latest edition of the '+d.portTitle+' Tide Tables');
+  E(m.inspect, d.inspect); E(m.agree, d.agree);
   const w = d.w, ln = c => c ? rankWatch(c.rank)+' : '+c.name : '';
-  E('E102', ln(w.o1)); E('E106', ln(w.o2));
-  [0,1,2].forEach(i => { E('E'+(103+i), ln(w.j1[i])); E('E'+(107+i), ln(w.j2[i])); });
-  E('A181', w.o1?w.o1.name:''); E('A182', w.o1?rankSig(w.o1.rank):''); E('I181', w.o2?w.o2.name:''); E('I182', w.o2?rankSig(w.o2.rank):'');
+  const watch = (cells, o, j) => { const ppl = m.compact ? [o, ...j].filter(Boolean) : [o, ...j]; cells.forEach((c, i) => E(c, ln(ppl[i]))); }; // compact: the first people of the watch, top down
+  watch(m.w1, w.o1, w.j1); watch(m.w2, w.o2, w.j2); if(m.standby) E(m.standby, '');
+  const pr = m.prep.row; E('A'+pr, w.o1?w.o1.name:''); E('A'+(pr+1), w.o1?rankSig(w.o1.rank):''); E('I'+pr, w.o2?w.o2.name:''); E('I'+(pr+1), w.o2?rankSig(w.o2.rank):'');
   const a = w.ack, hasB = a.length && a[0].rank==='Bosun', slots = hasB ? ['A','E','I'] : ['A','I'];
-  ['A','E','I'].forEach(c => { E(c+'187',''); E(c+'188',''); });
-  a.slice(0,slots.length).forEach((c,i) => { E(slots[i]+'187', c.name); E(slots[i]+'188', rankLbl(c.rank)); });
-  ['A','D','G','J'].forEach((c,i) => { const ab = w.abs[i]; E(c+'194', ab ? ab.name : ''); E(c+'195', ab ? 'A/B' : ''); });
+  const ar = m.ack.row, br = m.abs.row;
+  ['A','E','I'].forEach(c => { E(c+ar,''); E(c+(ar+1),''); });
+  a.slice(0,slots.length).forEach((c,i) => { E(slots[i]+ar, c.name); E(slots[i]+(ar+1), rankLbl(c.rank)); });
+  ['A','D','G','J'].forEach((c,i) => { const ab = w.abs[i]; E(c+br, ab ? ab.name : ''); E(c+(br+1), ab ? 'A/B' : ''); });
   s3.push(['A33', w.o1?w.o1.name:''], ['A34', w.o1?rankSig(w.o1.rank):''], ['M33', w.o2?w.o2.name:''], ['M34', w.o2?rankSig(w.o2.rank):''],
           ['A70', w.o1?w.o1.name:''], ['A71', w.o1?rankSig(w.o1.rank):''], ['M71', w.o2?rankSig(w.o2.rank):'']);
   return { 'xl/worksheets/sheet2.xml': s1, 'xl/worksheets/sheet3.xml': s3 };
@@ -2320,13 +2437,14 @@ function xlEdits(d){
 
 // ---- PDF ----
 function buildPlanPdf(d){
+  const dis = d.type==='disch', op = s => dis ? s.replace(/loading/g,'discharging') : s;
   const P = new MiniPDF.Doc(595,842), M = 30, RW = 535, navy='#1c3d4f', grey='#5b6f78', soft='#eef2f3', lineC='#9fb0b8';
   let y = 0, page = 0; const f = (v,n)=> v==null||!isFinite(v) ? '' : (+v).toFixed(n);
   const T = (x,yy,s,o)=>P.text(x,yy,s,o||{});
   const wrap = (s,size,maxW,bold) => { const out=[]; let cur=''; String(s).split(/\s+/).forEach(wd => { const t = cur ? cur+' '+wd : wd; if(MiniPDF.width(t,size,bold)>maxW && cur){ out.push(cur); cur=wd; } else cur=t; }); if(cur) out.push(cur); return out; };
   const foot = () => { P.line(M,P.H-30,M+RW,P.H-30,0.4,lineC); T(M,P.H-20,'CONTROLLED',{size:7,color:grey}); T(M+RW/2,P.H-20,'Revised: 01 Jan 2026',{size:7,color:grey,align:'center'}); T(M+RW,P.H-20,'Page '+page+'  -  Approved by: DPA/DIR',{size:7,color:grey,align:'right'}); };
   const head = (sub) => { if(page) { foot(); P.addPage(); } page++; P.rect(0,0,P.W,46,{fill:navy});
-    T(M,20,sub||'LOADING CARGO OPERATION PLAN',{size:13,bold:true,color:'#ffffff'}); T(M,36,'MT. TITANIA  -  '+(d.port||'')+'  -  '+(d.terminal||'')+'  -  '+dateFmt(d.date),{size:8,color:'#cfdde3'}); y = 62; };
+    T(M,20,sub||(dis?'DISCHARGING':'LOADING')+' CARGO OPERATION PLAN',{size:13,bold:true,color:'#ffffff'}); T(M,36,'MT. TITANIA  -  '+(d.port||'')+'  -  '+(d.terminal||'')+'  -  '+dateFmt(d.date),{size:8,color:'#cfdde3'}); y = 62; };
   const need = h => { if(y+h>P.H-40) head(); };
   const title = s => { need(28); T(M,y+10,s,{size:9.5,bold:true,color:navy}); P.line(M,y+14,M+RW,y+14,0.8,navy); y += 22; };
   const para = (s,o={}) => { const size=o.size||8.4; wrap(s,size,(o.w||RW)-(o.x||0),o.bold).forEach(l => { need(size+4); T(M+(o.x||0),y+size,l,{size,bold:o.bold,color:o.color}); y += size+3.4; }); };
@@ -2355,7 +2473,7 @@ function buildPlanPdf(d){
   T(M,y+10,'FPT: '+f(sF.bv.FPTKC,1)+' m3',{size:8,bold:true}); y += 22;
   drafts('Departure Condition Draft', sF);
   // 3. Loading sequence
-  head(); title('3. LOADING SEQUENCE');
+  head(); title(dis ? '3. DISCHARGING SEQUENCE' : '3. LOADING SEQUENCE');
   const cw = [74,...Array(10).fill((RW-74)/10)], cx = [M]; cw.forEach((w,i)=>{ if(i) cx.push(cx[i-1]+cw[i-1]); });
   const cell = (i,yy,s,o={}) => T(o.left?cx[i]+3:cx[i]+cw[i]-3,yy,s,{size:o.size||7.2,bold:o.bold,align:o.left?'left':'right',color:o.color});
   const rh = 11.5, hdr = () => { P.rect(M,y,RW,rh*2,{fill:soft}); cell(0,y+rh-2.5,'CARGO TANK',{left:1,bold:1,size:6.8});
@@ -2364,7 +2482,7 @@ function buildPlanPdf(d){
   const tn = id => id.replace(/^COTK(\d)([PS])$/,'$1 ($2)').replace(/^SLOPTK([PS])$/,'SLOP ($1)');
   XL_CARGO.forEach(id => { need(rh+2); cell(0,y+rh-3,tn(id),{left:1}); d.stages.forEach((s,i)=>{ cell(1+i*2,y+rh-3,s.sdg[id]); cell(2+i*2,y+rh-3,f(s.cv[id],3)); }); y += rh; P.line(M,y,M+RW,y,0.25,'#d3dce0'); });
   const sumRow = (lbl,fn,o={}) => { need(rh+2); cell(0,y+rh-3,lbl,{left:1,bold:1,size:7}); d.stages.forEach((s,i)=>{ const v = fn(s,i); if(v!=null) cell(2+i*2,y+rh-3,v,{bold:1}); }); y += rh; P.line(M,y,M+RW,y,0.5,navy); };
-  sumRow('Total ROB',s=>f(s.cargoTot,3)); sumRow('LOADED (m3)',(s,i)=>i?f(s.cargoTot-sA.cargoTot,3):null); sumRow('RATE',(s,i)=>i?f(s.cargoTot-d.stages[i-1].cargoTot,3):null);
+  sumRow(dis?'Total on board':'Total ROB',s=>f(s.cargoTot,3)); sumRow(dis?'DISCH (m3)':'LOADED (m3)',(s,i)=>i?f(dis?sA.cargoTot-s.cargoTot:s.cargoTot-sA.cargoTot,3):null); sumRow('RATE',(s,i)=>i?f(s.cargoTot-d.stages[i-1].cargoTot,3):null);
   y += 8; need(rh*3+8*rh);
   P.rect(M,y,RW,rh*2,{fill:soft}); cell(0,y+rh-2.5,'BALLAST TANK',{left:1,bold:1,size:6.8}); d.names.forEach((n,i)=>{ cell(1+i*2,y+rh*2-2.5,'SDG cm',{size:6.5,color:grey}); cell(2+i*2,y+rh*2-2.5,'Vol m3',{size:6.5,color:grey}); }); y += rh*2;
   BAL_PAIRS.forEach(([n],j) => { cell(0,y+rh-3,n,{left:1}); d.stages.forEach((s,i)=>{ cell(1+i*2,y+rh-3,Math.round(s.bal[j].sdg)); cell(2+i*2,y+rh-3,f(s.bal[j].vol,1)); }); y += rh; P.line(M,y,M+RW,y,0.25,'#d3dce0'); });
@@ -2373,8 +2491,8 @@ function buildPlanPdf(d){
   const two = (lbl,fa,fb,la,lb) => { need(rh+2); cell(0,y+rh-3,lbl,{left:1,bold:1,size:7}); d.stages.forEach((s,i)=>{ cell(1+i*2,y+rh-3,fa(s)); cell(2+i*2,y+rh-3,fb(s)); }); y += rh; P.line(M,y,M+RW,y,0.25,'#d3dce0'); };
   two('DRAFTS FWD/AFT',s=>f(s.R.Tf,2),s=>f(s.R.Ta,2)); sumRow('TRIM',s=>f(s.R.Ta-s.R.Tf,2));
   two('SF % / BM %',s=>f(s.R.str.maxSFp,0)+'%',s=>f(s.R.str.maxBMp,0)+'%');
-  y += 12; para('REMARKS : LOADING MASTER TO BE INFORMED __'+XP_STATIC.informMin+'__ MINUTES BEFORE COMPLETION AND TO REDUCE LOADING RATE.',{bold:true,size:8});
-  y += 6; title('4. DEBALLAST PLAN - Details of de-ballasting of WBT\'s'); para(d.deb.length ? 'DEBALLASTING '+d.deb.join(', ') : 'NO DEBALLASTING',{bold:true});
+  y += 12; para(dis ? 'REMARKS : INFORM RECEIVING VESSEL __'+XP_STATIC.informMin+'__ MINUTES BEFORE COMPLETION AND REDUCE DISCHARGING RATE.' : 'REMARKS : LOADING MASTER TO BE INFORMED __'+XP_STATIC.informMin+'__ MINUTES BEFORE COMPLETION AND TO REDUCE LOADING RATE.',{bold:true,size:8});
+  y += 6; title(dis ? '4. BALLAST PLAN - Details of ballasting of WBT\'s' : '4. DEBALLAST PLAN - Details of de-ballasting of WBT\'s'); para(d.ballast,{bold:true});
   // 5. Watch
   head(); title('5. WATCH ARRANGEMENTS');
   const w = d.w, grp = (lbl,time,off,list) => { need(70); P.rect(M,y,RW,14,{fill:soft}); T(M+4,y+10,lbl+'   '+time,{size:8,bold:true,color:navy}); T(M+RW-4,y+10,'LOCATION: C.O.C / MANIFOLD',{size:7,color:grey,align:'right'}); y += 14;
@@ -2382,10 +2500,10 @@ function buildPlanPdf(d){
   grp('WATCH 1','0000 - 0600 & 1200 - 1800',w.o1,[0,1,2].map(i=>w.j1[i]));
   grp('WATCH 2','0600 - 1200 & 1800 - 2400',w.o2,[0,1,2].map(i=>w.j2[i]));
   title('6. [a] WEATHER / TIDAL INFORMATION'); para('Refer to Navtex warnings and latest edition of the '+(d.portTitle||'___')+' Tide Tables');
-  y += 4; para('[b] OTHER INFO',{bold:true}); XP_INFO.forEach(s=>para(s,{x:8}));
-  y += 8; title('PROCEDURES - LOADING OPERATION'); para('(1) Preparation for loading',{bold:true}); XP_PREP.forEach(s=>para(s,{x:8}));
-  y += 4; para('(2) Tanks inspection by cargo surveyor / Terminal representative',{bold:true}); para(d.inspect,{x:8});
-  y += 4; para('(3) Agreement of cargo nomination with Loading Master',{bold:true}); para(d.agree,{x:8});
+  y += 4; para('[b] OTHER INFO',{bold:true}); XP_INFO.forEach(s=>para(op(s),{x:8}));
+  y += 8; title(dis ? 'PROCEDURES - DISCHARGING OPERATION' : 'PROCEDURES - LOADING OPERATION'); para(op('(1) Preparation for loading'),{bold:true}); XP_PREP.forEach(s=>para(op(s),{x:8}));
+  y += 4; para(dis ? '(2) Tanks inspection by cargo surveyor / Customer Vessel rep.' : '(2) Tanks inspection by cargo surveyor / Terminal representative',{bold:true}); para(d.inspect,{x:8});
+  y += 4; para(dis ? '(3) Agreement of cargo nomination with Chief Engineer / Bunker Surveyor' : '(3) Agreement of cargo nomination with Loading Master',{bold:true}); para(d.agree,{x:8});
   y += 4; para('(4) During cargo operation',{bold:true}); XP_DURING.forEach(s=>para(s,{x:8}));
   y += 4; para('(5) Topping off',{bold:true}); XP_TOP.forEach(s=>para(s,{x:8}));
   y += 8; para(XP_EMERG,{bold:true,size:7.6});
@@ -2411,12 +2529,13 @@ function buildPlanPdf(d){
   return P.blob();
 }
 // ---- template storage (stays on this device) ----
-const TPL = { bytes:null, name:'' };
+const TPL = { bytes:null, name:'' }, TPL_D = { bytes:null, name:'' }; // Excel templates: loading (key xlsx), discharging (key xlsx_d)
+const tplFor = type => type==='disch' ? TPL_D : TPL, tplKey = type => type==='disch' ? 'xlsx_d' : 'xlsx';
 const idb = (mode, fn) => new Promise((ok,no) => { try{ const rq = indexedDB.open('lc_files',1); rq.onupgradeneeded = ()=>rq.result.createObjectStore('f'); rq.onerror = ()=>no(rq.error);
   rq.onsuccess = ()=>{ const tx = rq.result.transaction('f',mode), os = tx.objectStore('f'), r = fn(os); tx.oncomplete = ()=>ok(r&&r.result); tx.onerror = ()=>no(tx.error); }; }catch(e){ no(e); } });
-async function tplLoad(){ try{ const v = await idb('readonly', os=>os.get('xlsx')); if(v&&v.bytes){ TPL.bytes = new Uint8Array(v.bytes); TPL.name = v.name||''; } }catch(e){} tplShow(); }
-async function tplSave(bytes,name){ TPL.bytes = bytes; TPL.name = name; try{ await idb('readwrite', os=>os.put({bytes:bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),name},'xlsx')); }catch(e){} tplShow(); toast('Excel template saved'); }
-function tplShow(){ const e=$('#xpTpl'); if(e) e.textContent = TPL.bytes ? 'Excel template: '+TPL.name+' ('+Math.round(TPL.bytes.length/1024)+' KB)' : 'Excel template: not chosen (PDF only)'; }
+async function tplLoad(){ for(const ty of ['load','disch']){ try{ const v = await idb('readonly', os=>os.get(tplKey(ty))), T = tplFor(ty); if(v&&v.bytes){ T.bytes = new Uint8Array(v.bytes); T.name = v.name||''; } }catch(e){} } tplShow(); }
+async function tplSave(bytes,name,type){ const T = tplFor(type); T.bytes = bytes; T.name = name; try{ await idb('readwrite', os=>os.put({bytes:bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),name},tplKey(type))); }catch(e){} tplShow(); toast('Excel template saved'); }
+function tplShow(){ [['#xpTplS',TPL],['#xpTplDS',TPL_D]].forEach(([id,T])=>{ const e=$(id); if(e) e.textContent = T.bytes ? T.name+' ('+Math.round(T.bytes.length/1024)+' KB)' : 'not chosen (PDF only)'; }); }
 const saveBlob = (blob,name) => { const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),20000); };
 
 function xlFills(d){
@@ -2529,26 +2648,28 @@ async function xpDeliver(files){
 async function exportPlan(sel){
   const msg=$('#xpMsg'); msg.textContent='Creating files...';
   try{
-    const d = planData(), base = ['Loading Plan', d.port, d.terminal, d.grade, d.mt!=null?d.mt+' MT':'', d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'');
+    const d = planData(), dis = d.type==='disch', m = XL_MAP[d.type], T = tplFor(d.type);
+    const base = (dis ? [m.title, d.terminal, d.grade, d.mt!=null?d.mt+' MT':''] : [m.title, d.port, d.terminal, d.grade, d.mt!=null?d.mt+' MT':'', d.date]).filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'');
+    if(dis){ sel.isg = false; sel.pre = false; } // the ISGOTT and Pre-Arrival checklists are for terminal loading
     let pdf = null, pdf2 = null, xl = null, isg = null, pre = null, note = '';
-    if(TPL.bytes && (sel.lp || sel.xl || sel.hr)){
+    if(T.bytes && (sel.lp || sel.xl || sel.hr)){
       const sg = sigMaps(d), conv = {}; for(const sh in sg){ conv[sh] = {}; for(const k in sg[sh]) conv[sh][k] = await sigPng(sg[sh][k]); }
-      const res = await PlanXlsx.fill(TPL.bytes, xlEdits(d), { over: xlOver(d), strip: true, sigs: conv, slotOf: sigSlotOf, fills: { 'xl/worksheets/sheet2.xml': xlFills(d) }, borderFix: { 'xl/worksheets/sheet2.xml': [['A88','B88'], ['A90','B90']] } }); xl = res.blob;
-      try{ if(sel.lp) pdf = await buildSheetPdf(TPL.bytes, res, ['Sheet1'], true, sg); if(sel.hr) pdf2 = await buildSheetPdf(TPL.bytes, res, ['HOURLY'], false, sg); }
-      catch(e){ console.error(e); if(sel.lp) pdf = buildPlanPdf(d); pdf2 = null; note = 'Simple Loading Plan PDF (could not copy the Excel layout: '+(e&&e.message||e)+'). '; }
-    } else if(sel.lp){ pdf = buildPlanPdf(d); note = 'Simple Loading Plan PDF (no Excel template). '; }
+      const res = await PlanXlsx.fill(T.bytes, xlEdits(d), { over: xlOver(d), strip: true, sigs: conv, slotOf: sigSlotOf, fills: { 'xl/worksheets/sheet2.xml': xlFills(d) }, borderFix: { 'xl/worksheets/sheet2.xml': [['A88','B88'], ['A90','B90']] } }); xl = res.blob;
+      try{ if(sel.lp) pdf = await buildSheetPdf(T.bytes, res, [m.sheet], true, sg); if(sel.hr) pdf2 = await buildSheetPdf(T.bytes, res, ['HOURLY'], false, sg); }
+      catch(e){ console.error(e); if(sel.lp) pdf = buildPlanPdf(d); pdf2 = null; note = 'Simple '+m.title+' PDF (could not copy the Excel layout: '+(e&&e.message||e)+'). '; }
+    } else if(sel.lp){ pdf = buildPlanPdf(d); note = 'Simple '+m.title+' PDF (no Excel template). '; }
     if(sel.isg) isg = await buildIsgPdf(d);
     if(sel.pre) pre = await buildPrePdf(d);
     window.__lastExport = { xl, pdf, pdf2, isg };
     // browsers allow one download per tap, so every file gets its own button (phones can also share all at once)
-    XP_FILES = [sel.lp && pdf && [pdf, base+'.pdf', 'Loading Plan PDF'], sel.hr && pdf2 && [pdf2, base+' - Hourly.pdf', 'Hourly PDF'], sel.xl && xl && [xl, base+'.xlsx', 'Excel'], isg && [isg, ['ISGOTT Checklist', d.port, d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'')+'.pdf', 'Ship Shore C/L'], pre && [pre, ['Pre-Arrival Checklist', d.port, d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'')+'.pdf', 'Pre-Arrival C/L']].filter(Boolean);
+    XP_FILES = [sel.lp && pdf && [pdf, base+'.pdf', m.title+' PDF'], sel.hr && pdf2 && [pdf2, base+' - Hourly.pdf', 'Hourly PDF'], sel.xl && xl && [xl, base+'.xlsx', 'Excel'], isg && [isg, ['ISGOTT Checklist', d.port, d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'')+'.pdf', 'Ship Shore C/L'], pre && [pre, ['Pre-Arrival Checklist', d.port, d.date].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g,'')+'.pdf', 'Pre-Arrival C/L']].filter(Boolean);
     let how = ''; try{ how = await xpDeliver(XP_FILES); }catch(e){ how = e && e.code==='declined' ? 'cancelled' : 'error'; console.error(e); }
     msg.textContent = note + XP_FILES.length + ' file' + (XP_FILES.length===1?'':'s') + ' ready.' + (how==='cancelled' ? ' Save cancelled.' : how==='error' ? ' Could not save here, tap Export again.' : '');
   }catch(e){ console.error(e); msg.textContent = 'Failed: '+(e&&e.message||e); }
 }
 function xpOpen(){
-  const need = { xl:!TPL.bytes, hr:!TPL.bytes, isg:!ISG.pages, pre:!PRE.pages }, txt = { xl:'(choose the Excel template)', hr:'(choose the Excel template)', isg:'(choose the template)', pre:'(choose the template)' };
-  document.querySelectorAll('#xpOpts [data-xo]').forEach(c=>{ const k=c.dataset.xo, off=!!need[k]; c.disabled=off; if(off) c.checked=false; const n=document.querySelector('[data-xn="'+k+'"]'); if(n) n.textContent=off?txt[k]:''; });
+  const dis = PLs().type==='disch', T = tplFor(PLs().type), need = { xl:!T.bytes, hr:!T.bytes, isg:!ISG.pages, pre:!PRE.pages }, txt = { xl:'(choose the Excel template)', hr:'(choose the Excel template)', isg:'(choose the template)', pre:'(choose the template)' };
+  renderModeLabels(); document.querySelectorAll('#xpOpts [data-xo]').forEach(c=>{ const k=c.dataset.xo, hide = dis && (k==='isg'||k==='pre'); c.closest('label').hidden = hide; const off=!!need[k] || hide; c.disabled=off; if(off) c.checked=false; const n=document.querySelector('[data-xn="'+k+'"]'); if(n) n.textContent=off?txt[k]:''; });
   $('#xoMsg').textContent=''; $('#xpModal').hidden=false;
 }
 $('#xpExport').onclick = xpOpen;
@@ -2560,8 +2681,9 @@ $('#xpModal').addEventListener('click',e=>{ if(e.target.id==='xpModal') $('#xpMo
 $('#xoGo').onclick = ()=>{ const sel={}; document.querySelectorAll('#xpOpts [data-xo]').forEach(c=>{ sel[c.dataset.xo]=c.checked&&!c.disabled; });
   if(!Object.values(sel).some(Boolean)){ $('#xoMsg').textContent='Choose at least one file.'; return; }
   $('#xpModal').hidden=true; exportPlan(sel); };
-$('#xpTplBtn').onclick = ()=>$('#xpTplFile').click();
-$('#xpTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.arrayBuffer().then(b=>{ try{ PlanXlsx.readZip(new Uint8Array(b)); tplSave(new Uint8Array(b), fl.name); }catch(err){ $('#xpMsg').textContent='Not a valid .xlsx file.'; } }); e.target.value=''; };
+$('#xpTplBtn').onclick = ()=>{ $('#xpTplFile').dataset.for='load'; $('#xpTplFile').click(); };
+$('#xpTplDBtn').onclick = ()=>{ $('#xpTplFile').dataset.for='disch'; $('#xpTplFile').click(); };
+$('#xpTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl.arrayBuffer().then(b=>{ try{ PlanXlsx.readZip(new Uint8Array(b)); tplSave(new Uint8Array(b), fl.name, e.target.dataset.for); }catch(err){ $('#xpMsg').textContent='Not a valid .xlsx file.'; } }); e.target.value=''; };
 tplLoad(); isgLoad(); preLoad();
 
 document.querySelectorAll('#t-set details[data-sg]').forEach(d=>{ if((store.get('lc_open')||{})['set_'+d.dataset.sg]===false) d.open=false; d.querySelector('summary').addEventListener('click',()=>setTimeout(()=>{ const o=store.get('lc_open')||{}; o['set_'+d.dataset.sg]=d.open; store.set('lc_open',o); })); });
