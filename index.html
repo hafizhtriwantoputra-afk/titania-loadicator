@@ -27,6 +27,9 @@ body.info-mode header.readout,body.info-mode .profile{display:none}
 .chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;cursor:pointer;background:var(--panel);user-select:none}
 .chip input{width:14px;height:14px;margin:0}
 .chip.on{background:var(--hull);border-color:var(--hull);color:#fff;font-weight:600}
+.chip b.ord{font-size:11px;opacity:.85}
+#autoMsg{font-size:13px;margin-top:6px;line-height:1.45}
+#autoMsg .bad{color:var(--bad,#c0392b)}
 .names-book{margin-top:10px;font-size:13px}.names-book summary{cursor:pointer;color:var(--muted)}
 .crew-row .nm small{display:block;color:var(--muted);font-size:11px}
 .crew-row.ask{background:color-mix(in srgb,var(--bad) 10%,transparent);border-radius:6px;padding-left:6px}
@@ -183,6 +186,9 @@ tr.tot td{font-weight:600;border-bottom:0;border-top:2px solid var(--ink)}
 .btn{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:500}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.sm{padding:5px 10px;font-size:13px}
+input.n.sens{border-color:var(--sea);background:color-mix(in srgb,var(--sea) 12%,transparent)}
+.sens-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#spText{width:100%;height:96px;font:12px/1.3 ui-monospace,monospace}
 .btn.danger{color:var(--bad)}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .list{display:grid;gap:8px}
@@ -360,6 +366,7 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
         <div class="field"><label for="inTemp">Temperature °C</label><input class="n" id="inTemp" data-ik="temp" inputmode="decimal"></div>
         <div class="field"><label for="inVoy">Voyage</label><input class="t" id="inVoy" data-ik="voy"></div>
         <div class="field" style="grid-column:1/-1"><label>Stowage tank</label><div class="chips" id="stowBox"></div></div>
+        <div class="field" style="grid-column:1/-1" id="autoBox" hidden></div>
       </div>
       <div class="pl-grid" id="infoCalc" style="margin-top:10px"></div>
     </div>
@@ -370,6 +377,7 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
       <div class="pl-grid">
         <div class="field"><label for="inRobRho" data-ml="robRho">ROB density @15°C</label><input class="n" id="inRobRho" data-ik="robRho" inputmode="decimal"></div>
         <div class="field"><label for="inRobTemp" data-ml="robTemp">ROB temperature °C</label><input class="n" id="inRobTemp" data-ik="robTemp" inputmode="decimal"></div>
+        <div class="field"><span class="lbl">Temperature from</span><div class="seg" id="robTempSrc"><button type="button" data-v="manual">Manual</button><button type="button" data-v="online">Online</button></div></div>
       </div>
       <div class="pl-grid" id="robCalc" style="margin-top:10px"></div>    </div>
   </details>
@@ -394,6 +402,7 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
 <section class="tab" id="t-tanks">
   <h2>Fuel, lub oil, fresh water &amp; misc</h2>
   <p class="sub">Enter once here. Used for every stage in Plan. Cargo and ballast are entered in the Plan menu.</p>
+  <div class="sens-row" style="margin-bottom:12px"><button class="btn sm pri" type="button" id="tkSync">Sync sensor</button><span class="lbl sens-info"></span></div>
   <div class="row" style="margin-bottom:12px" hidden>
     <input class="t" id="condName" style="flex:1;min-width:160px" placeholder="Condition name" aria-label="Condition name">
     <button class="btn sm" id="btnClear" type="button">Clear all</button>
@@ -410,7 +419,7 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
   <div class="pl-views"><div class="seg big" id="plView"><button type="button" data-v="rob">Initial</button><button type="button" data-v="s0">Seq 1</button><button type="button" data-v="s1">Seq 2</button><button type="button" data-v="s2">Seq 3</button><button type="button" data-v="s3">Final</button></div></div>
 
   <div id="plRobView">
-    <div class="row" style="margin-bottom:12px"><button class="btn sm danger" type="button" id="rbClear">Clear ROB</button></div>
+    <div class="row" style="margin-bottom:12px"><button class="btn sm danger" type="button" id="rbClear">Clear ROB</button><span class="sens-row"><button class="btn sm pri" type="button" id="rbSync">Sync sensor</button><span class="lbl sens-info"></span></span></div>
 
     <details class="group" open>
       <summary><span class="g-title" data-ml="robCargo">Cargo ROB</span><span class="g-sum" id="plRobSum"></span><span class="chev">›</span></summary>
@@ -590,6 +599,12 @@ td.ok{color:var(--ok)} td.bad{color:var(--bad);font-weight:600}
   </div>
   <div class="row" style="justify-content:flex-end"><button class="btn" id="xoCancel" type="button">Cancel</button><button class="btn pri" id="xoGo" type="button">Save</button></div>
   <p class="note" id="xoMsg" style="margin:8px 0 0"></p>
+</div></div>
+<div class="modal" id="spModal" hidden><div class="box" role="dialog" aria-labelledby="spTitle">
+  <h3 id="spTitle">Paste sensor data</h3>
+  <p class="sub" style="margin:0 0 6px">In Titania Sync tap Salin untuk Loadicator, then press and hold the box below and choose Paste.</p>
+  <textarea id="spText" autocomplete="off" spellcheck="false"></textarea>
+  <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" id="spCancel" type="button">Cancel</button><button class="btn pri" id="spOk" type="button">Fill tanks</button></div>
 </div></div>
 <div class="modal" id="pdfModal" hidden><div class="box" role="dialog" aria-labelledby="pdfTitle">
   <h3 id="pdfTitle">Save PDF report</h3>
@@ -929,6 +944,64 @@ const XL_MAP = {
            navtex:'B110', inspect:'B133', agree:'B138', prep:{ row:187 }, ack:{ row:193 }, abs:{ row:197 }, pages:[38,97,149,202],
            sig:{ o:[182,185,186], ack:[186,189,192], ab:[193,194,196], abCols:{ 0:'ab0', 2:'ab1', 6:'ab2', 9:'ab3' } } }
 };
+// Auto discharging plan: the discharge (TOV m³, null = every chosen tank to minimum level) is split into four equal stages and taken
+// pair by pair in the chosen order, each pair down to minLevel before the next, P and S at the same sounding. After each stage, if trim
+// is above lim.max the forward ballast pairs are filled in order to lim.full; a pair that would drop trim below lim.lo is filled only
+// to lim.aim, and the next pair is used while trim stays above lim.hi. trimOf(cv, bv) returns trim (m, + by stern).
+function autoDisch(o){
+  const lim = { max: 2.0, lo: 0.6, hi: 1.5, aim: 1.0, full: 0.95, ...(o.lim || {}) }, eps = 1e-6;
+  const cv = { ...o.tanks }, bv = { ...o.bal0 }, warn = [], stages = [];
+  const minV = id => Math.min(cv[id], o.volAt(id, o.minCm)), spare = p => p.reduce((a, id) => a + Math.max(0, o.tanks[id] - Math.min(o.tanks[id], o.volAt(id, o.minCm))), 0);
+  const avail = o.pairs.reduce((a, p) => a + spare(p), 0);
+  let total = o.total > 0 ? o.total : avail; if (total > avail + eps) { warn.push('short'); total = avail; }
+  const setPair = (p, R) => { // lowest common sounding whose volumes (never above what is in the tank) add up to R
+    let lo = 0, hi = 5000; for (let i = 0; i < 60; i++) { const h = (lo + hi) / 2, s = p.reduce((a, id) => a + Math.min(o.volAt(id, h), cv[id]), 0); if (s > R) hi = h; else lo = h; }
+    const cur = p.map(id => cv[id]); p.forEach((id, j) => { cv[id] = Math.min(o.volAt(id, hi), cur[j]); }); };
+  const take = need => { for (const p of o.pairs) { if (need <= eps) break; const room = p.reduce((a, id) => a + Math.max(0, cv[id] - minV(id)), 0); if (room <= eps) continue;
+    const q = Math.min(need, room); setPair(p, p.reduce((a, id) => a + cv[id], 0) - q); need -= q; } };
+  const trim = () => o.trimOf({ ...cv }, { ...bv });
+  const fill = (p, f) => { const base = p.map(id => bv[id] || 0); p.forEach((id, j) => { bv[id] = base[j] + (o.balCap[id] * lim.full - base[j]) * f; }); };
+  let done = 0;
+  for (let k = 0; k < 4; k++) {
+    const goal = total * (k + 1) / 4; take(goal - done); done = goal;
+    const sw = []; let t = trim();
+    if (t > lim.max + eps) {
+      for (const p of o.balPairs) {
+        if (p.every(id => (bv[id] || 0) >= o.balCap[id] * lim.full - eps)) continue;
+        const keep = p.map(id => bv[id] || 0); fill(p, 1); const tf = trim();
+        if (tf < lim.lo) { p.forEach((id, j) => { bv[id] = keep[j]; }); let a = 0, b = 1; for (let i = 0; i < 40; i++) { const m = (a + b) / 2; fill(p, m); const tm = trim(); p.forEach((id, j) => { bv[id] = keep[j]; }); if (tm > lim.aim) a = m; else b = m; } fill(p, (a + b) / 2); }
+        t = trim(); if (t <= lim.hi) break;
+      }
+      if (t > lim.max + eps) sw.push('trim');
+    }
+    stages.push({ cv: { ...cv }, bv: { ...bv }, trim: t, warn: sw });
+  }
+  return { stages, total, avail, warn };
+}
+// Sensor sync: tank JSON pasted from Titania Sync -> app tank ids. Cargo ullage mm becomes the
+// observed sounding in cm (o.ref[id] = reference height cm); other tanks keep their sounding cm (0 = empty); null = no sensor.
+// temp = cargo temperature weighted by volume (o.volAt(id, cm) m³) over the tanks that hold cargo. Names with no app tank go to skipped.
+const SENSOR_ALIAS = { TECHFWTP:'TECHWTKP', TECHFWTS:'TECHWTKS', MGOSERTK2P:'MGOSERTK2S', LNGTK:'LNG' }; // MGO.SER.TK2 is (S) on board
+function sensorMap(j, o){
+  if(!j || !j.ok) throw new Error((j && j.error) || 'No sensor data');
+  const known = new Set(o.ids), cargo = {}, other = {}, skipped = [];
+  const idOf = name => { const k = String(name).toUpperCase().replace(/[^A-Z0-9]/g, ''), id = SENSOR_ALIAS[k] || k; return known.has(id) ? id : null; };
+  let tw = 0, tv = 0;
+  for(const c of j.cargo || []){ const id = idOf(c.tank); if(!id){ skipped.push(c.tank); continue; } if(c.ullage_mm == null || !(o.ref[id] > 0)) continue;
+    const cm = Math.max(0, +(o.ref[id] - c.ullage_mm / 10).toFixed(1)); cargo[id] = cm;
+    const v = cm > 0 ? o.volAt(id, cm) : 0; if(v > 0 && c.temp_c != null){ tw += v * c.temp_c; tv += v; } }
+  for(const c of j.other || []){ const id = idOf(c.tank); if(!id){ skipped.push(c.tank); continue; } if(c.sounding_cm != null) other[id] = +c.sounding_cm; }
+  return { time: j.time || '', cargo, other, temp: tv > 0 ? tw / tv : null, skipped };
+}
+// Titania Sync copies SENSOR_TAG + its tank JSON to the clipboard and Sync sensor pastes it here.
+const SENSOR_TAG = 'TITANIA-SENSOR:';
+function sensorParse(text){
+  const t = String(text || '').trim();
+  if(!t.startsWith(SENSOR_TAG)) throw new Error('No Titania Sync data. Copy it in Titania Sync first.');
+  let j; try{ j = JSON.parse(t.slice(SENSOR_TAG.length)); }catch(_){ j = null; }
+  if(!j || typeof j !== 'object' || Array.isArray(j)) throw new Error('Titania Sync data is damaged. Copy it again.');
+  return j;
+}
 // PLAN-CORE end
 </script>
 <script>
@@ -1572,7 +1645,7 @@ function renderGroups(){
         const c=S.tanks[t.id]||{}; const u=S.unit[g]||'m3';
         const shown = c.vol>0 ? (u==='pct'? +(c.vol/t.cap*100).toFixed(1) : u==='snd'? +LC.tankProps(t,+c.vol).h.toFixed(3) : +(+c.vol).toFixed(2)) : '';
         h+=`<div class="trow" data-id="${t.id}"><div class="tname">${t.name}<small id="ts-${t.id}">cap ${fmt(t.cap,2)} m³ · fr ${t.fr[0]}–${t.fr[1]}</small></div>
-          <div class="tin"><div class="field"><label for="q-${t.id}">${u==='pct'?'%':u==='snd'?'Snd m':'m³'}</label><input class="n" id="q-${t.id}" data-k="q" inputmode="decimal" value="${shown}"></div>
+          <div class="tin"><div class="field"><label for="q-${t.id}">${u==='pct'?'%':u==='snd'?'Snd m':'m³'}</label><input class="n${sensOn(t.id)?' sens':''}" id="q-${t.id}" data-k="q" inputmode="decimal" value="${shown}"></div>
           <div class="field"><label for="d-${t.id}">ρ</label><input class="n s" id="d-${t.id}" data-k="rho" inputmode="decimal" value="${c.rho??t.rho}"></div></div>
           <div class="bar"><i id="bar-${t.id}"></i></div></div>`;
       }
@@ -1965,7 +2038,7 @@ const PL_BAL = SHIP.tanks.filter(t => t.group === 'WATER BALLAST');
 const shortN = t => { const id=t.id, m=id.match(/^COTK(\d)([PS])$/); if(m) return m[1]+' '+m[2]; let n=id.match(/^WBTK(\d)([PS])$/); if(n) return n[1]+'W '+n[2];
   if(/^SLOPTK/.test(id)) return 'Slop '+id.slice(-1); if(/^RESIDTK/.test(id)) return 'Resid '+id.slice(-1); if(/^FWDWBTK/.test(id)) return 'FWD W '+id.slice(-1); if(id==='FPTKC') return 'FPT'; return t.name; };
 function planDefault(){ return { type:'load', port:'', terminal:'', grade:'VLSFO', voy:'', parcels:[{ name:'Shore tank 1', mt:'', rho:'', temp:'', prod:'auto' }],
-  rob:{ rho:'', temp:'', obsA:'', obsF:'', mode:'snd', t:{}, tk:{}, u:{} }, view:'rob', load:{ c:{}, b:{}, bu:'pct' }, date:'', seq:[0,1,2,3].map(()=>({ c:{}, b:{} })) }; }
+  rob:{ rho:'', temp:'', obsA:'', obsF:'', mode:'snd', t:{}, tk:{}, u:{}, tempSrc:'manual' }, view:'rob', load:{ c:{}, b:{}, bu:'pct' }, date:'', seq:[0,1,2,3].map(()=>({ c:{}, b:{} })) }; }
 function PLs(){ if(!Array.isArray(S.ops) || !S.ops.length){ S.ops=[{ ...planDefault(), cy:1, id:'op1' }]; S.opCur=0; }
   if(!(S.opCur>=0 && S.opCur<S.ops.length)) S.opCur=S.ops.length-1;
   const p=S.ops[S.opCur], d=planDefault(); if(!p.load) p.load=d.load; if(!p.cy) p.cy=1; for(const k in d) if(p[k]==null) p[k]=d[k]; for(const k in d.rob) if(p.rob[k]==null) p.rob[k]=d.rob[k]; for(const k in d.load) if(p.load[k]==null) p.load[k]=d.load[k];
@@ -2060,7 +2133,7 @@ function renderPlan(){
   ['rho','temp','obsA','obsF'].forEach(k=>{ const el=document.querySelector(`[data-rk="${k}"]`); if(el) el.value=P.rob[k]??''; });
   document.querySelectorAll('#plRobMode button').forEach(b=>b.classList.toggle('on',b.dataset.v===P.rob.mode));
   document.querySelectorAll('.robValH').forEach(h=>{ h.innerHTML = P.rob.mode==='vol' ? 'TOV m³' : luSel(P.rob.mode==='ull'?'Ullage ':'Snd '); });
-  const robRow=t=>`<tr><td>${t.name}</td><td><input class="n s" data-rt="${t.id}" inputmode="decimal" value="${(P.rob.t[t.id]||{}).val??''}" aria-label="ROB ${t.name}"></td><td id="rbc-${t.id}"></td><td id="rbv-${t.id}"></td><td id="rbm-${t.id}"></td></tr>`;
+  const robRow=t=>`<tr><td>${t.name}</td><td><input class="n s${sensOn(t.id)?' sens':''}" data-rt="${t.id}" inputmode="decimal" value="${(P.rob.t[t.id]||{}).val??''}" aria-label="ROB ${t.name}"></td><td id="rbc-${t.id}"></td><td id="rbv-${t.id}"></td><td id="rbm-${t.id}"></td></tr>`;
   $('#plRobBody').innerHTML = CARGO_MAIN.map(robRow).join('');
   const vH=(P.rob.mode==='vol' ? 'TOV m³' : luSel(P.rob.mode==='ull'?'Ullage ':'Snd ')), oo=P.robOpen||{};
   $('#plRobExtra').innerHTML = EXTRA_G.filter(g=>g[2].length).map(([k,lbl,ts])=>`<details class="group" data-rg="${k}" ${oo[k]?'open':''}><summary><span class="g-title">${lbl} ROB</span><span class="g-sum" id="exs-${k}"></span><span class="chev">›</span></summary><div class="pl-body"><div class="tbl-wrap"><table class="pl-tbl"><thead><tr><th>Tank</th><th class="robValH">${vH}</th><th>Corr</th><th>TOV m³</th><th>MT air</th></tr></thead><tbody>${ts.map(robRow).join('')}</tbody></table></div></div></details>`).join('');
@@ -2069,7 +2142,7 @@ function renderPlan(){
   $('#plRobGroups').innerHTML = PL_OTHER.map(g=>{ const ts=SHIP.tanks.filter(t=>t.group===g); if(!ts.length) return ''; const u=P.rob.u[g]||'m3';
     return `<details class="group" data-rg="${g}" ${open[g]?'open':''}><summary><span class="g-title">${g.toLowerCase().replace(/(^|\s)\w/g,c=>c.toUpperCase())}</span><span class="g-sum" id="rgs-${g.replace(/\s/g,'_')}"></span><span class="chev">›</span></summary><div class="pl-body">
       <div class="g-tools" style="padding:0 0 6px"><span class="lbl">Entered as</span><div class="seg" data-rgu="${g}">${grpUnits(g).map(x=>`<button type="button" data-v="${x}" class="${x===u?'on':''}">${uLbl(x)}</button>`).join('')}</div></div>
-      <div class="tbl-wrap"><table class="pl-tbl"><thead><tr><th>Tank</th><th>${uLbl(u)}</th><th></th><th>m³</th><th>%</th></tr></thead><tbody>${ts.map(t=>`<tr><td>${t.name}<small class="bmin">min ${BAL_MIN(t.id)}%</small></td><td><input class="n s" data-rtk="${t.id}" inputmode="decimal" value="${robInVal(t)}" aria-label="${t.name}"></td><td class="bset"><button type="button" class="btn sm" data-rbt="${t.id}" data-rbv="min" aria-label="Min ${t.name}">Min</button><button type="button" class="btn sm" data-rbt="${t.id}" data-rbv="max" aria-label="Max ${t.name}">Max</button></td><td id="rk-${t.id}"></td><td id="rkp-${t.id}"></td></tr>`).join('')}</tbody></table></div></div></details>`; }).join('');
+      <div class="tbl-wrap"><table class="pl-tbl"><thead><tr><th>Tank</th><th>${uLbl(u)}</th><th></th><th>m³</th><th>%</th></tr></thead><tbody>${ts.map(t=>`<tr><td>${t.name}<small class="bmin">min ${BAL_MIN(t.id)}%</small></td><td><input class="n s${sensOn(t.id)?' sens':''}" data-rtk="${t.id}" inputmode="decimal" value="${robInVal(t)}" aria-label="${t.name}"></td><td class="bset"><button type="button" class="btn sm" data-rbt="${t.id}" data-rbv="min" aria-label="Min ${t.name}">Min</button><button type="button" class="btn sm" data-rbt="${t.id}" data-rbv="max" aria-label="Max ${t.name}">Max</button></td><td id="rk-${t.id}"></td><td id="rkp-${t.id}"></td></tr>`).join('')}</tbody></table></div></div></details>`; }).join('');
   if(!isRob) renderSeq(+P.view.slice(1));
   planUpdate();
 }
@@ -2083,6 +2156,44 @@ function renderSeq(k){
   $('#plSeqExtra').innerHTML = EXTRA_G.filter(g=>g[2].length).map(([k,lbl,ts])=>`<details class="group" data-rg="${k}_S" ${so[k+'_S']?'open':''}><summary><span class="g-title">${lbl}</span><span class="g-sum" id="exq-${k}"></span><span class="chev">›</span></summary><div class="pl-body"><div class="tbl-wrap"><table class="pl-tbl cmp"><thead><tr><th>Tank</th><th>Prev m³</th><th>SDG ${LU()}</th><th>Volume m³</th><th>%</th><th>Δ m³</th></tr></thead><tbody>${ts.map(seqRow).join('')}</tbody></table></div></div></details>`).join('');
   $('#plBalBody').innerHTML = PL_BAL.map(t=>`<tr><td>${shortN(t)}<small class="bmin">min ${BAL_MIN(t.id)}%</small></td><td id="sbp-${t.id}"></td><td><input class="n s" data-sb="${t.id}" inputmode="decimal" value="${Q.b[t.id]??''}" aria-label="Ballast % ${t.name}"></td><td class="bset"><button type="button" class="btn sm" data-bt="${t.id}" data-bv="min" aria-label="Min ${t.name}">Min</button><button type="button" class="btn sm" data-bt="${t.id}" data-bv="max" aria-label="Max ${t.name}">Max</button></td><td id="sbv-${t.id}"></td><td id="sbs-${t.id}"></td></tr>`).join('');
 }
+function robSetMode(nw){ const P=PLs(); if(P.rob.mode===nw) return; // keep the TOV, re-express it in the new entry mode
+  const rob=ROB||planRob(), t2={};
+  CARGO_T.forEach(t=>{ const r=rob.tanks[t.id]; if(!(r.tov>0)) return;
+    let obs=r.obs; if(obs==null){ obs=r.snd; if(S.trimMode!=='off' && rob.trim!=null && t.tc){ const k=LC.trimCorr(t,r.snd,rob.trim,tcStep()); if(k.corr!=null) obs=r.snd-k.corr; } }
+    t2[t.id]={ val: nw==='vol' ? +r.tov.toFixed(3) : nw==='snd' ? +fromCm(obs).toFixed(isMM()?0:1) : +fromCm(refCm(t)-obs).toFixed(isMM()?0:1) }; });
+  P.rob.t=t2; P.rob.mode=nw; }
+// --- sensor sync: Titania Sync copies the tank data, Sync sensor pastes it (sensorParse) ---
+const sensOn = id => ((PLs().rob.sync||{}).ids||[]).includes(id) || (S.tkSync||[]).includes(id);
+function sensDrop(id){ const sy=PLs().rob.sync; if(sy&&sy.ids) sy.ids=sy.ids.filter(x=>x!==id); if(S.tkSync) S.tkSync=S.tkSync.filter(x=>x!==id); }
+// Clipboard first (iPhone shows a Paste bubble); if it is refused or holds something else, ask for a manual paste in #spModal
+function sensPasteBox(){ return new Promise(res=>{ const m=$('#spModal'), ta=$('#spText'); ta.value=''; m.hidden=false;
+  const done=v=>{ m.hidden=true; $('#spOk').onclick=$('#spCancel').onclick=m.onclick=null; res(v); };
+  $('#spOk').onclick=()=>done(ta.value); $('#spCancel').onclick=()=>done(null); m.onclick=e=>{ if(e.target===m) done(null); }; }); }
+async function sensText(){ let t='';
+  try{ if(navigator.clipboard && navigator.clipboard.readText) t=await navigator.clipboard.readText(); }catch(_){}
+  return String(t).trim().startsWith(SENSOR_TAG) ? t : sensPasteBox(); }
+function sensInfo(){ const sy=PLs().rob.sync, tx = sy&&sy.time ? 'Sensor data '+sy.time.replace('T',' ').slice(0,16) : ''; document.querySelectorAll('.sens-info').forEach(el=>el.textContent=tx); }
+async function sensorSync(b){
+  const P=PLs(), other=SHIP.tanks.filter(t=>t.group!=='PRODUCTS' && t.group!=='WATER BALLAST');
+  const has = Object.values(P.rob.t).some(c=>c && c.val!=='' && c.val!=null) || Object.values(P.rob.tk).some(v=>+v>0) || other.some(t=>(S.tanks[t.id]||{}).vol>0);
+  if(has && !b.dataset.sure){ b.dataset.sure=1; b.textContent='Overwrite? Tap again'; setTimeout(()=>{ delete b.dataset.sure; b.textContent='Sync sensor'; },3000); return; }
+  delete b.dataset.sure; b.textContent='Reading…'; b.disabled=true; let m;
+  try{ const tx=await sensText(); if(tx==null) return;
+    m = sensorMap(sensorParse(tx), { ids:SHIP.tanks.map(t=>t.id), ref:Object.fromEntries(CARGO_T.map(t=>[t.id, refCm(t)])), volAt:(id,cm)=>LC.sndToVol(byId[id], cm*10) }); }
+  catch(err){ toast(err.message); return; }
+  finally{ b.disabled=false; b.textContent='Sync sensor'; }
+  robSetMode('snd'); const ids=[], tk=[];
+  for(const id in m.cargo){ P.rob.t[id]={ val: m.cargo[id]>0 ? +fromCm(m.cargo[id]).toFixed(isMM()?0:1) : '' }; ids.push(id); }
+  for(const id in m.other){ const t=byId[id], v=volOfSdg(t, m.other[id]);
+    if(t.group==='WATER BALLAST'){ P.rob.tk[id]=v; ids.push(id); } else { S.tanks[id]={ ...(S.tanks[id]||{ rho:t.rho }), vol:v }; tk.push(id); } }
+  if(ids.some(id=>byId[id].group==='WATER BALLAST')) P.rob.u['WATER BALLAST']='sdg';
+  if(P.rob.tempSrc==='online' && m.temp!=null) P.rob.temp=+m.temp.toFixed(1);
+  P.rob.sync={ time:m.time, ids }; S.tkSync=tk; S.ref=null;
+  store.set('lc_current',S); renderPlan(); renderGroups(); update(); renderInfo(); sensInfo();
+  toast((ids.length+tk.length)+' tanks filled from sensor · '+m.time.slice(11,16)); }
+document.addEventListener('click', e=>{ const b=e.target.closest('#rbSync,#tkSync'); if(b) sensorSync(b); });
+document.addEventListener('input', e=>{ const el=e.target; if(!el.classList || !el.classList.contains('sens')) return;
+  const row=el.closest('.trow'); sensDrop(el.dataset.rt || el.dataset.rtk || (row && row.dataset.id)); el.classList.remove('sens'); store.set('lc_current',S); });
 let PR=null;
 const SEQ_NAMES=['Initial','Seq 1','Seq 2','Seq 3','Final'];
 function planUpdate(){
@@ -2153,12 +2264,7 @@ $('#t-plan').addEventListener('click', e=>{ const b=e.target.closest('button'); 
   if(b.dataset.rbt){ const t=byId[b.dataset.rbt]; P.rob.tk[t.id] = t.cap*(b.dataset.rbv==='min' ? BAL_MIN(t.id) : 95)/100; store.set('lc_current',S); renderPlan(); return; }
   if(b.dataset.bt){ const k=+P.view.slice(1), t=byId[b.dataset.bt]; P.seq[k].b[t.id] = b.dataset.bv==='min' ? String(BAL_MIN(t.id)) : '95'; store.set('lc_current',S); renderSeq(k); planUpdate(); return; }
   if(pid==='plView'){ P.view=b.dataset.v; store.set('lc_current',S); renderPlan(); window.scrollTo({top:0}); return; }
-  if(pid==='plRobMode'){ const old=P.rob.mode, nw=b.dataset.v; if(old!==nw){ // keep the TOV, re-express it in the new entry mode
-      const rob=ROB||planRob(), t2={};
-      CARGO_T.forEach(t=>{ const r=rob.tanks[t.id]; if(!(r.tov>0)) return;
-        let obs=r.obs; if(obs==null){ obs=r.snd; if(S.trimMode!=='off' && rob.trim!=null && t.tc){ const k=LC.trimCorr(t,r.snd,rob.trim,tcStep()); if(k.corr!=null) obs=r.snd-k.corr; } }
-        t2[t.id]={ val: nw==='vol' ? +r.tov.toFixed(3) : nw==='snd' ? +fromCm(obs).toFixed(isMM()?0:1) : +fromCm(refCm(t)-obs).toFixed(isMM()?0:1) }; });
-      P.rob.t=t2; P.rob.mode=nw; } store.set('lc_current',S); renderPlan(); return; }
+  if(pid==='plRobMode'){ robSetMode(b.dataset.v); store.set('lc_current',S); renderPlan(); return; }
   if(pg && pg.rgu){ P.rob.u[pg.rgu]=b.dataset.v; store.set('lc_current',S); renderPlan(); return; }
   if(b.id==='rbCopy'){ R=solve(); CARGO_T.forEach(t=>{ const r=R.cargo&&R.cargo[t.id]; P.rob.t[t.id]={ val: r&&r.tov>0 ? +r.tov.toFixed(3) : '' }; }); P.rob.mode='vol';
     const src=ccOn()?S.cc:(Object.values(S.cargo).find(c=>c&&c.rho)||{}); if(src.rho) P.rob.rho=src.rho; if(src.temp!=null&&src.temp!=='') P.rob.temp=src.temp;
@@ -2261,7 +2367,37 @@ function infoCalcs(){
 const STOW_OPT = ['1W','2W','3W','4W','5W','SLOP'];
 function renderStow(){
   const sel = (PLs().stow || '').split(/[\s,]+/).filter(x => STOW_OPT.includes(x.toUpperCase())).map(x => x.toUpperCase());
-  $('#stowBox').innerHTML = STOW_OPT.map(o => `<label class="chip${sel.includes(o)?' on':''}"><input type="checkbox" data-stow="${o}" ${sel.includes(o)?'checked':''}>${o}</label>`).join('');
+  const ord = PLs().type==='disch' && PLs().auto;
+  $('#stowBox').innerHTML = STOW_OPT.map(o => `<label class="chip${sel.includes(o)?' on':''}"><input type="checkbox" data-stow="${o}" ${sel.includes(o)?'checked':''}>${ord&&sel.includes(o)?`<b class="ord">${sel.indexOf(o)+1}.</b>`:''}${o}</label>`).join('');
+  renderAuto();
+}
+// ---- prototype: automatic discharging sequence (autoDisch in PLAN-CORE) ----
+const STOW_PAIR = o => o==='SLOP' ? ['SLOPTKP','SLOPTKS'] : ['COTK'+o[0]+'P','COTK'+o[0]+'S'];
+const AUTO_BAL = [['FWDWBTKP','FWDWBTKS'],['WBTK1P','WBTK1S'],['FPTKC']];
+function renderAuto(){
+  const P=PLs(), box=$('#autoBox'); box.hidden = P.type!=='disch'; if(box.hidden) return;
+  box.innerHTML = `<label>Sequence mode</label><div class="seg" id="autoSeg"><button type="button" data-v="0" class="${P.auto?'':'on'}">Manual</button><button type="button" data-v="1" class="${P.auto?'on':''}">Auto</button></div>`
+    + (P.auto ? `<div style="margin-top:8px"><button type="button" class="btn" id="autoGo">Create sequence automatically</button></div><div id="autoMsg">${P.autoMsg||'Tap the tanks in discharge order (1 = first, emptied to 150 mm). Trim limit 2.0 m: forward ballast FWD W, 1W, FPT to 95% until trim is 0.6–1.5 m.'}</div>` : '');
+}
+function autoPlan(btn){
+  const P=PLs(), order=(P.stow||'').split(',').filter(x=>STOW_OPT.includes(x));
+  if(!order.length){ P.autoMsg='<span class="bad">Choose the stowage tanks first.</span>'; renderAuto(); return; }
+  if(P.seq.some(q=>Object.keys(q.c).length||Object.keys(q.b).length) && btn && !btn.dataset.sure){ btn.dataset.sure=1; btn.textContent='Tap again to replace Seq 1–3 and Final'; setTimeout(()=>{ delete btn.dataset.sure; btn.textContent='Create sequence automatically'; },4000); return; }
+  const rob=planRob(), nom=NOM, byT=Object.fromEntries(SHIP.tanks.map(t=>[t.id,t]));
+  const tanks={}; CARGO_T.forEach(t=>tanks[t.id]=rob.tanks[t.id].tov);
+  const bal0={}; PL_BAL.forEach(t=>bal0[t.id]=+P.rob.tk[t.id]||0);
+  const balCap={}; PL_BAL.forEach(t=>balCap[t.id]=t.cap);
+  const r = autoDisch({ pairs: order.map(STOW_PAIR), tanks, volAt:(id,cm)=>{ const t=byT[id]; return Math.min(t.cap, LC.sndToVol(t, Math.min(Math.max(cm,0),maxCm(t))*10)); }, minCm:15,
+    total: nom.tov>0 ? nom.tov : null, bal0, balCap, balPairs:AUTO_BAL, trimOf:(cv,bv)=>LC.compute(SHIP, condFor(cv,bv)).trim });
+  let pc=tanks, pb=bal0;
+  r.stages.forEach((st,k)=>{ const Q={ c:{}, b:{} };
+    CARGO_T.forEach(t=>{ if(Math.abs(st.cv[t.id]-pc[t.id])>0.0005) Q.c[t.id] = +(LC.volToSnd(t, st.cv[t.id])/10).toFixed(1); });
+    PL_BAL.forEach(t=>{ if(Math.abs((st.bv[t.id]||0)-(pb[t.id]||0))>0.05) Q.b[t.id] = +((st.bv[t.id]||0)/t.cap*100).toFixed(1); });
+    P.seq[k]=Q; pc=st.cv; pb=st.bv; });
+  const tr = x => Math.abs(x).toFixed(2)+(x>=0?' S':' H');
+  P.autoMsg = `Discharge ${fmt(r.total,3)} m³ in 4 stages of ${fmt(r.total/4,3)} m³.<br>` + r.stages.map((s,k)=>`${SEQ_NAMES[k+1]}: trim ${tr(s.trim)}${Object.keys(P.seq[k].b).length?' · ballast '+Object.keys(P.seq[k].b).map(id=>shortN(byT[id])+' '+P.seq[k].b[id]+'%').join(', '):''}${s.warn.includes('trim')?' <span class="bad">trim above 2.0 m with all forward ballast at 95%</span>':''}`).join('<br>')
+    + (r.warn.includes('short') ? `<br><span class="bad">Nomination is more than the chosen tanks hold above 150 mm (${fmt(r.avail,3)} m³): all of them go to 150 mm.</span>` : '');
+  store.set('lc_current',S); renderAuto(); renderPlan(); toast('Sequence created');
 }
 // ---- operation cycle: Loading, Disch 1, Disch 2, ... then the next Loading starts a new cycle ----
 const opEsc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
@@ -2302,6 +2438,7 @@ function renderInfo(){
   const P=PLs(); if(!P.date) P.date=new Date().toISOString().slice(0,10);
   document.querySelectorAll('[data-ik]').forEach(el=>{ el.value=infoGet(el.dataset.ik)??''; });
   $('#inRobRho').placeholder=P.parcels[0].rho||''; $('#inRobTemp').placeholder=P.parcels[0].temp||'';
+  document.querySelectorAll('#robTempSrc button').forEach(b=>b.classList.toggle('on', b.dataset.v===(P.rob.tempSrc||'manual'))); $('#inRobTemp').readOnly = P.rob.tempSrc==='online';
   infoCalcs();
   renderStow();
   renderCrew();
@@ -2311,12 +2448,15 @@ $('#t-info').addEventListener('input', e=>{ const el=e.target;
 });
 $('#t-info').addEventListener('change', e=>{ const el=e.target;
   if(el.dataset.stow){ const P=PLs(), cur=(P.stow||'').split(/[\s,]+/).map(x=>x.toUpperCase()); const on=new Set(cur.filter(x=>STOW_OPT.includes(x))); if(el.checked) on.add(el.dataset.stow); else on.delete(el.dataset.stow);
-    P.stow = STOW_OPT.filter(o=>on.has(o)).join(','); store.set('lc_current',S); renderStow(); return; }
+    P.stow = [...cur.filter(x=>on.has(x)), ...[el.dataset.stow].filter(x=>on.has(x)&&!cur.includes(x))].join(','); store.set('lc_current',S); renderStow(); return; }
   if(el.dataset.wo){ CREW.watch[el.dataset.wo].o=el.value; crewSave(); renderCrew(); return; }
   if(el.dataset.wc){ const [k,i]=el.dataset.wc.split(':'); CREW.watch[k].c[+i]=el.value; crewSave(); renderCrew(); } });
 $('#t-info').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return;
   if(b.dataset.op!=null){ opOpen(+b.dataset.op); return; }
   if(b.dataset.opdel!=null){ if(!b.dataset.sure){ b.dataset.sure=1; b.textContent='Delete?'; setTimeout(()=>{ delete b.dataset.sure; b.textContent='×'; },3000); return; } opDelete(+b.dataset.opdel); return; }
+  if(b.parentElement && b.parentElement.id==='autoSeg'){ const P=PLs(); P.auto = b.dataset.v==='1'; store.set('lc_current',S); renderStow(); return; }
+  if(b.id==='autoGo'){ autoPlan(b); return; }
+  if(b.parentElement && b.parentElement.id==='robTempSrc'){ PLs().rob.tempSrc=b.dataset.v; store.set('lc_current',S); renderInfo(); return; }
   if(b.id==='opNewD'){ opNewDisch(); return; }
   if(b.id==='opNewL'){ opNewLoad(); return; }
   if(b.parentElement.id==='opType'){ const P=PLs(), t=b.dataset.v; if(t===P.type) return; const same=S.ops.filter(o=>o.cy===P.cy && o.type===t);
@@ -2687,7 +2827,7 @@ $('#xpTplFile').onchange = e => { const fl=e.target.files[0]; if(!fl) return; fl
 tplLoad(); isgLoad(); preLoad();
 
 document.querySelectorAll('#t-set details[data-sg]').forEach(d=>{ if((store.get('lc_open')||{})['set_'+d.dataset.sg]===false) d.open=false; d.querySelector('summary').addEventListener('click',()=>setTimeout(()=>{ const o=store.get('lc_open')||{}; o['set_'+d.dataset.sg]=d.open; store.set('lc_open',o); })); });
-loadState(S); renderSaved(); renderInfo();
+loadState(S); renderSaved(); renderInfo(); sensInfo();
 </script>
 
 
